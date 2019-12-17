@@ -24,6 +24,7 @@ public class CurrencyCMD {
     // 增发货币 /bank currency incr [货币代码] [增发货币数量]
     // 减少货币 /bank currency decr [货币代码] [减少货币数量]
     // 重命名货币 /bank currency rename [货币代码] [新货币名称]
+    // 准备金提取 /bank currency get [货币代码] [货币数量]
     private CurrencyCMD() {
     }
 

@@ -9,6 +9,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CheckService;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.CheckUtil;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -51,6 +52,9 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
                 case "pay":
                     excutePay(commandSender, command, s, strings);
                     break;
+                case "check":
+                    excuteCheck(commandSender, command, s, strings);
+                    break;
                 case "test":
                     excuteTest(commandSender, command, s, strings);
                     break;
@@ -65,9 +69,9 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     private void excuteTest (CommandSender commandSender, Command command, String s, String[] strings) {
         //commandSender.sendMessage(((Player) commandSender).getInventory().getItemInMainHand().getType().name());
         Player p = (Player) commandSender;
-        ItemStack is = CheckService.getCheck(new CurrencyEntity("XJB",new BigDecimal(19745347.7945)), p.getName());
+        ItemStack is = CheckUtil.getCheck(new CurrencyEntity("XJB",new BigDecimal(19745347.7945)), p.getName());
         p.getInventory().setItemInMainHand(is);
-        Optional<CurrencyEntity> oce = CheckService.getValue(is);
+        Optional<CurrencyEntity> oce = CheckUtil.getValue(is);
         if(oce.isPresent()){
             CurrencyEntity ce = oce.get();
             StringBuilder sb = new StringBuilder();
@@ -111,5 +115,14 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         }
         Player p = (Player) commandSender;
         accountInstance.transferToAccount(p, strings[1], strings[2], strings[3]);
+    }
+    // 产生支票 /bank check [货币代码] [货币数量]
+    private void excuteCheck(CommandSender commandSender, Command command, String s, String[] strings) {
+         if (strings.length != 3) {
+            commandSender.sendMessage ("参数不正确\n开支票 /bank check [货币代码] [货币数量]");
+            return;
+        }
+        Player p = (Player) commandSender;
+        checkInstance.makeCheck(p, strings[1], strings[2]);
     }
 }
