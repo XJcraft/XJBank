@@ -1,0 +1,15 @@
+name: MultiCurrency
+main: com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin
+version: 1.0-SNAPSHOT
+author: zjyl1994
+commands:
+    bank:
+        description: Contains all commands in [MultiCurrency].
+        usage: use /<command> help to show all commands avaliable in plugin
+        permission: bank.command
+        permission-message: You don't have <permission>
+permissions:
+    bank.command:
+        description: Allow user to use bank command
+        default: true
+

@@ -1,0 +1,11 @@
+secert: _REPLACE_WITH_UNIQUE_SECERT_
+datasource:
+  driver: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+  server: 127.0.0.1
+  port: 3306
+  database: multicurrency
+  username: multicurrency
+  password: multicurrency
+  hikari:
+    maxLifetime: 1765000 #一個連線的生命時長（毫秒），超時而且沒被使用則被釋放（retired），預設:30分鐘，建議設定比資料庫超時時長少30秒以上
+    maximumPoolSize: 15 #連線池中允許的最大連線數。預設值：10；推薦的公式：((core_count * 2) + effective_spindle_count)
