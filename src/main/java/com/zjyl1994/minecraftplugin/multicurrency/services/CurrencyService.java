@@ -31,7 +31,7 @@ public class CurrencyService {
     private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
 
     // 检查是否货币持有人
-    private static Boolean isCurrencyOwner(String currencyCode, String playerName) {
+    public static Boolean isCurrencyOwner(String currencyCode, String playerName) {
         try (
                  Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY);) {
             String owner;

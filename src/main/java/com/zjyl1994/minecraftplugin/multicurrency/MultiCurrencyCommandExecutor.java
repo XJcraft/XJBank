@@ -43,9 +43,13 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         } else if (strings.length == 0) {
             return false;
         } else if (strings.length >= 1) {
-            switch (strings[0]) {
+            String lowerCaseCMD = strings[0].toLowerCase();
+            switch (lowerCaseCMD) {
                 case "currency":
                     excuteCurrency(commandSender, command, s, strings);
+                    break;
+                case "pay":
+                    excutePay(commandSender, command, s, strings);
                     break;
                 case "test":
                     excuteTest(commandSender, command, s, strings);
@@ -80,9 +84,10 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     // 增发货币 /bank currency incr [货币代码] [增发货币数量]
     // 减少货币 /bank currency decr [货币代码] [减少货币数量]
     // 重命名货币 /bank currency rename [货币代码] [新货币名称]
+    // 准备金提取 /bank currency get [货币代码] [货币数量]
     private void excuteCurrency (CommandSender commandSender, Command command, String s, String[] strings) {
         if (strings.length != 4) {
-            commandSender.sendMessage ("参数不正确\n新建货币 /bank currency new [货币代码] [货币名称]\n增发货币 /bank currency incr [货币代码] [增发货币数量]\n减少货币 /bank currency decr [货币代码] [减少货币数量]\n重命名货币 /bank currency rename [货币代码] [新货币名称]");
+            commandSender.sendMessage ("参数不正确\n新建货币 /bank currency new [货币代码] [货币名称]\n增发货币 /bank currency incr [货币代码] [增发货币数量]\n减少货币 /bank currency decr [货币代码] [减少货币数量]\n重命名货币 /bank currency rename [货币代码] [新货币名称]\n准备金提取 /bank currency get [货币代码] [货币数量]");
             return;
         }
         Player p = (Player) commandSender;
@@ -94,5 +99,17 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
             currencyInstance.decrCommand(p, strings[2], strings[3]);
         if (strings[1].equalsIgnoreCase("rename"))
             currencyInstance.renameCommand(p, strings[2], strings[3]);
+        if (strings[1].equalsIgnoreCase("get"))
+            accountInstance.reserveTransferOut(p, strings[2], strings[3]);
+    }
+    
+    // 直接转账 /bank pay [对方玩家名] [货币代码] [货币数量]
+    private void excutePay(CommandSender commandSender, Command command, String s, String[] strings) {
+         if (strings.length != 4) {
+            commandSender.sendMessage ("参数不正确\n转账 /bank pay [对方玩家名] [货币代码] [货币数量]");
+            return;
+        }
+        Player p = (Player) commandSender;
+        accountInstance.transferToAccount(p, strings[1], strings[2], strings[3]);
     }
 }

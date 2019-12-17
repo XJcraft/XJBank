@@ -40,7 +40,7 @@ public class CurrencyCMD {
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
             @Override
             public void run() {
-                OperateResult newCurrency = CurrencyService.newCurrency(currencyCode, currencyName, p.getName());
+                OperateResult newCurrency = CurrencyService.newCurrency(currencyCode.toUpperCase(), currencyName, p.getName());
                 Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                     @Override
                     public void run() {
@@ -60,7 +60,7 @@ public class CurrencyCMD {
             @Override
             public void run() {
                 BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
-                OperateResult reserveIncr = CurrencyService.reserveIncr(currencyCode, bdAmount, p.getName());
+                OperateResult reserveIncr = CurrencyService.reserveIncr(currencyCode.toUpperCase(), bdAmount, p.getName());
                 Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                     @Override
                     public void run() {
@@ -80,7 +80,7 @@ public class CurrencyCMD {
             @Override
             public void run() {
                 BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
-                OperateResult reserveDecr = CurrencyService.reserveDecr(currencyCode, bdAmount, p.getName());
+                OperateResult reserveDecr = CurrencyService.reserveDecr(currencyCode.toUpperCase(), bdAmount, p.getName());
                 Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                     @Override
                     public void run() {
@@ -99,7 +99,7 @@ public class CurrencyCMD {
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
             @Override
             public void run() {
-                OperateResult renameCurrency = CurrencyService.renameCurrency(currencyCode, currencyName, p.getName());
+                OperateResult renameCurrency = CurrencyService.renameCurrency(currencyCode.toUpperCase(), currencyName, p.getName());
                 Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                     @Override
                     public void run() {
