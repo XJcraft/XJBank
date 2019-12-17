@@ -45,7 +45,7 @@ public class AccountCMD {
                     @Override
                     public void run() {
                         if (transferResult.getSuccess()) {
-                            p.sendMessage("成功向" + payTo + "转账 " + currencyCode.toUpperCase() + roundAmount.toString());
+                            p.sendMessage("成功向" + payTo + "转账" + currencyCode.toUpperCase() + roundAmount.toString());
                         } else {
                             p.sendMessage(transferResult.getReason());
                         }
@@ -72,7 +72,7 @@ public class AccountCMD {
                     @Override
                     public void run() {
                         if (transferResult.getSuccess()) {
-                            p.sendMessage("成功从" + upperCurrencyCode + "准备金账户转出 " + roundAmount.toString());
+                            p.sendMessage("成功从" + upperCurrencyCode + "准备金账户转出" + roundAmount.toString());
                         } else {
                             p.sendMessage(transferResult.getReason());
                         }

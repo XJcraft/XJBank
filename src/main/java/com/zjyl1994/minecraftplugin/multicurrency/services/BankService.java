@@ -11,6 +11,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeHelper;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,8 +32,7 @@ public class BankService {
     // 查询用户特定币种的余额
     public static OperateResult queryCurrencyBalance(String username, String currencyCode) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();
-                PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);) {
             BigDecimal balance;
             try {
                 selectBalance.setString(1, username);
@@ -59,10 +59,7 @@ public class BankService {
     // payer 付款人 payee 收款人 currencyCode 货币代码 amount 金额
     public static OperateResult transferTo(String payer, String payee, String currencyCode, BigDecimal amount, TxTypeEnum txType, String remark) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();
-                PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);
-                PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);
-                PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
             if (!AccountHelper.isUnlimitedAccount(payer)) {
                 // 非无限账户需要检查付款人有没有足够的钱
                 BigDecimal payerBalance; // 付款人余额
@@ -80,7 +77,7 @@ public class BankService {
                     throw e;
                 }
                 if (amount.compareTo(payerBalance) > 0) { // 待转账金额大于账户余额
-                    return new OperateResult(false, "转账失败-余额不足");
+                    return new OperateResult(false, "向" + payee + "转账失败,可用余额不足，" + payer + "当前余额" + payerBalance.setScale(4, RoundingMode.DOWN));
                 }
                 // 付款人扣款逻辑
                 try {
@@ -89,7 +86,7 @@ public class BankService {
                     updateBalance.setBigDecimal(3, amount.negate());
                     updateBalance.setBigDecimal(4, amount.negate());
                     updateBalance.executeUpdate();
-                    
+
                     // 操作日志
                     insertLog.setString(1, payer);
                     insertLog.setString(2, payee);
@@ -111,7 +108,7 @@ public class BankService {
                     updateBalance.setBigDecimal(3, amount);
                     updateBalance.setBigDecimal(4, amount);
                     updateBalance.executeUpdate();
-                    
+
                     // 操作日志
                     insertLog.setString(1, payee);
                     insertLog.setString(2, payer);
