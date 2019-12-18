@@ -48,11 +48,11 @@ public class MultiCurrencyEventListener implements Listener {
             if (event.getClickedBlock().getState() instanceof Sign) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 // 银行相关牌子
-                if(ChatColor.stripColor(sign.getLine(0).trim()).equalsIgnoreCase("[BANK]")){
+                if(ChatColor.stripColor(sign.getLine(0).trim()).equalsIgnoreCase("[ATM]")){
                     // 此处处理牌子
                     switch (ChatColor.stripColor(sign.getLine(1).trim())) {
                         case "支票兑现":
-                            CheckCMD.getInstance().cashCheck(p);
+                            CheckCMD.getInstance().cashBlukCheck(p);
                             break;
                     }
                 }

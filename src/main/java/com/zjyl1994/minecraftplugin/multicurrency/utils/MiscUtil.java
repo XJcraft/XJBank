@@ -27,4 +27,14 @@ public class MiscUtil {
         sb.append("]");
         return sb.toString();
     }
+    
+    public static Integer getIntegerFromString(String s){
+        try {
+           return Integer.parseInt(s);
+        }
+        catch (NumberFormatException e)
+        {
+           return 0;
+        }
+    }
 }
