@@ -8,6 +8,7 @@ package com.zjyl1994.minecraftplugin.multicurrency;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
+import com.zjyl1994.minecraftplugin.multicurrency.services.ATMService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -49,12 +50,9 @@ public class MultiCurrencyEventListener implements Listener {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 // 银行相关牌子
                 if(ChatColor.stripColor(sign.getLine(0).trim()).equalsIgnoreCase("[ATM]")){
-                    // 此处处理牌子
-                    switch (ChatColor.stripColor(sign.getLine(1).trim())) {
-                        case "支票兑现":
-                            CheckCMD.getInstance().cashBlukCheck(p);
-                            break;
-                    }
+                    // 此处进入对话
+                    ATMService atmInstance = new ATMService(plugin);
+                    atmInstance.Start(p);
                 }
             }
         }
