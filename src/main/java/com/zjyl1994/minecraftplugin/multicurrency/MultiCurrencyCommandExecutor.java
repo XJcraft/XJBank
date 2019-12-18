@@ -8,7 +8,6 @@ package com.zjyl1994.minecraftplugin.multicurrency;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
-import com.zjyl1994.minecraftplugin.multicurrency.services.CheckService;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CheckUtil;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
 import java.math.BigDecimal;
@@ -54,6 +53,9 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
                     break;
                 case "check":
                     excuteCheck(commandSender, command, s, strings);
+                    break;
+                case "cash":
+                    excuteCash(commandSender, command, s, strings);
                     break;
                 case "test":
                     excuteTest(commandSender, command, s, strings);
@@ -124,5 +126,11 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         }
         Player p = (Player) commandSender;
         checkInstance.makeCheck(p, strings[1], strings[2]);
+    }
+    
+    // 兑付手中的支票 /bank cash
+    private void excuteCash(CommandSender commandSender, Command command, String s, String[] strings) {
+        Player p = (Player) commandSender;
+        checkInstance.cashCheck(p);
     }
 }

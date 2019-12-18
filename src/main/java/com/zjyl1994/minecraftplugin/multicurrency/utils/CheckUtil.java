@@ -43,7 +43,7 @@ public class CheckUtil {
         // 书的数据
         var meta = (BookMeta) itemStack.getItemMeta();
         // 滤掉作者不对的
-        if (!"XJMA".equals(meta.getAuthor())) {
+        if (!"XJCraft金融管理局".equals(meta.getAuthor())) {
             return Optional.empty();
         }
         // 滤掉不是破旧不堪的
@@ -105,9 +105,9 @@ public class CheckUtil {
         viewableBuilder.append("\n签发:");
         viewableBuilder.append(issuer);
         viewableBuilder.append("\n日期:");
-        viewableBuilder.append(dateTimeStr.substring(0, 9));
+        viewableBuilder.append(dateTimeStr.substring(0, 10));
         viewableBuilder.append("\n时间:");
-        viewableBuilder.append(dateTimeStr.substring(11, 18));
+        viewableBuilder.append(dateTimeStr.substring(11, 19));
         viewableBuilder.append("\n\n§8§nXJCraft金融管理局监制\n§7§k");
         viewableBuilder.append(checkHash);
         content.add(viewableBuilder.toString());
@@ -131,7 +131,7 @@ public class CheckUtil {
         BookMeta meta = (BookMeta) book.getItemMeta();
         meta.setDisplayName(ChatColor.DARK_PURPLE + moneyString);
         meta.setTitle(moneyString);
-        meta.setAuthor("XJMA");
+        meta.setAuthor("XJCraft金融管理局");
         meta.setPages(content);
         meta.setGeneration(BookMeta.Generation.TATTERED);
         book.setItemMeta(meta);

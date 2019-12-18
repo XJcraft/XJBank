@@ -86,19 +86,23 @@ public class BankService {
                     updateBalance.setBigDecimal(3, amount.negate());
                     updateBalance.setBigDecimal(4, amount.negate());
                     updateBalance.executeUpdate();
-
-                    // 操作日志
-                    insertLog.setString(1, payer);
-                    insertLog.setString(2, payee);
-                    insertLog.setInt(3, txType.ordinal());
-                    insertLog.setString(4, currencyCode);
-                    insertLog.setBigDecimal(5, amount);
-                    insertLog.setString(6, remark);
-                    insertLog.executeUpdate();
                 } catch (SQLException e) {
                     connection.rollback();
                     throw e;
                 }
+            }
+            try {
+                // 操作日志
+                insertLog.setString(1, payer);
+                insertLog.setString(2, payee);
+                insertLog.setInt(3, txType.ordinal());
+                insertLog.setString(4, currencyCode);
+                insertLog.setBigDecimal(5, amount);
+                insertLog.setString(6, remark);
+                insertLog.executeUpdate();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
             }
             if (!AccountHelper.isUnlimitedAccount(payee)) {
                 // 收款人非无限账户需要增加款项
@@ -108,19 +112,23 @@ public class BankService {
                     updateBalance.setBigDecimal(3, amount);
                     updateBalance.setBigDecimal(4, amount);
                     updateBalance.executeUpdate();
-
-                    // 操作日志
-                    insertLog.setString(1, payee);
-                    insertLog.setString(2, payer);
-                    insertLog.setInt(3, TxTypeHelper.negate(txType).ordinal());
-                    insertLog.setString(4, currencyCode);
-                    insertLog.setBigDecimal(5, amount);
-                    insertLog.setString(6, remark);
-                    insertLog.executeUpdate();
                 } catch (SQLException e) {
                     connection.rollback();
                     throw e;
                 }
+            }
+            try {
+                // 操作日志
+                insertLog.setString(1, payee);
+                insertLog.setString(2, payer);
+                insertLog.setInt(3, TxTypeHelper.negate(txType).ordinal());
+                insertLog.setString(4, currencyCode);
+                insertLog.setBigDecimal(5, amount);
+                insertLog.setString(6, remark);
+                insertLog.executeUpdate();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
             }
             connection.commit();
             return new OperateResult(true, "OK");

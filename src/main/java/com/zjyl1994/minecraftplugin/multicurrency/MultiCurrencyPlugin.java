@@ -22,6 +22,8 @@ public class MultiCurrencyPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        getCommand("bank").setExecutor(new MultiCurrencyCommandExecutor(this));
+        getServer().getPluginManager().registerEvents(new MultiCurrencyEventListener(this), this);
         this.random = new Random(System.currentTimeMillis());
         this.saveDefaultConfig();
         
@@ -37,8 +39,6 @@ public class MultiCurrencyPlugin extends JavaPlugin {
         hikari.setAutoCommit(false);
         hikari.addDataSourceProperty("useUnicode", "true");
         hikari.addDataSourceProperty("characterEncoding", "utf8");
-
-        getCommand("bank").setExecutor(new MultiCurrencyCommandExecutor(this));
     }
     
     @Override

@@ -23,7 +23,7 @@ public class CheckService {
     }
 
     // 兑现一张支票
-    public static OperateResult cashCheck(String username, String currencyCode, BigDecimal amount) {
-        return BankService.transferTo(AccountHelper.CHECK_CENTER, username, currencyCode, amount, TxTypeEnum.CHECK_TRANSFER_IN, "支票兑付");
+    public static OperateResult cashCheck(String username, String currencyCode, BigDecimal amount, String remark) {
+        return BankService.transferTo(AccountHelper.CHECK_CENTER, username, currencyCode, amount, TxTypeEnum.CHECK_TRANSFER_OUT, "支票兑付" + remark);
     }
 }
