@@ -5,6 +5,7 @@
  */
 package com.zjyl1994.minecraftplugin.multicurrency.utils;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -25,5 +26,15 @@ public class ItemHelper {
         } else {// 喷到地上
             p.getWorld().dropItemNaturally(p.getLocation(), is);
         }
+    }
+    // 检查用户背包里的东西够不够
+    public static boolean checkPlayerItemStack(Player p, ItemStack is){
+        PlayerInventory inv = p.getInventory();
+        return inv.contains(is.getType(), is.getAmount());
+    }
+    // 从用户手里扣走一定数量的东西
+    public static void removePlayerItemStack(Player p, ItemStack is){
+        PlayerInventory inv = p.getInventory();
+        inv.removeItem(is);
     }
 }

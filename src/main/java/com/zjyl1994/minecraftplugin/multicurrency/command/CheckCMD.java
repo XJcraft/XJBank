@@ -43,6 +43,10 @@ public class CheckCMD {
 
     // 产生一张支票
     public void makeCheck(Player p, String currencyCode, String amount) {
+        if(!ItemHelper.checkPlayerItemStack(p, new ItemStack(Material.PAPER,4))){
+            p.sendMessage("获取一本支票需要4张纸");
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
             @Override
             public void run() {
@@ -53,6 +57,8 @@ public class CheckCMD {
                     @Override
                     public void run() {
                         if (transferResult.getSuccess()) {
+                            // 拿走4张纸
+                            ItemHelper.removePlayerItemStack(p, new ItemStack(Material.PAPER,4));
                             // 在玩家手里生成支票
                             ItemStack is = CheckUtil.getCheck(new CurrencyEntity(upperCode, roundAmount), p.getName());
                             ItemHelper.givePlayerItemStack(p, is);
@@ -87,6 +93,10 @@ public class CheckCMD {
                             if (transferResult.getSuccess()) {
                                 // 在玩家手里抢走已经兑付的支票
                                 p.getInventory().remove(itemInMainHand);
+                                // 还给用户4张纸
+                                ItemStack paperIS = new ItemStack(Material.PAPER);
+                                paperIS.setAmount(4);
+                                ItemHelper.givePlayerItemStack(p, paperIS);
                                 p.sendMessage("支票" + currencyCode + amount.toString() + "已入账");
                             } else {
                                 p.sendMessage(transferResult.getReason());

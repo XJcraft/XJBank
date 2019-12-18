@@ -10,13 +10,16 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CheckUtil;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.ItemHelper;
 import java.math.BigDecimal;
 import java.util.Optional;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 /**
  *
@@ -71,18 +74,14 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     private void excuteTest (CommandSender commandSender, Command command, String s, String[] strings) {
         //commandSender.sendMessage(((Player) commandSender).getInventory().getItemInMainHand().getType().name());
         Player p = (Player) commandSender;
-        ItemStack is = CheckUtil.getCheck(new CurrencyEntity("XJB",new BigDecimal(19745347.7945)), p.getName());
-        p.getInventory().setItemInMainHand(is);
-        Optional<CurrencyEntity> oce = CheckUtil.getValue(is);
-        if(oce.isPresent()){
-            CurrencyEntity ce = oce.get();
-            StringBuilder sb = new StringBuilder();
-            sb.append("有效支票");
-            sb.append(ce.getCurrencyCode());
-            sb.append(ce.getAmount().toString());
-            p.sendMessage(sb.toString());
+        ItemStack is = new ItemStack(Material.PAPER);
+        is.setAmount(4);
+        if(ItemHelper.checkPlayerItemStack(p,is)){
+            p.sendMessage("有4张纸");
+            ItemHelper.removePlayerItemStack(p, is);
+            p.sendMessage("已移除4张纸");
         }else{
-            p.sendMessage("无效支票");
+            p.sendMessage("不包含4张纸");
         }
     }
     
