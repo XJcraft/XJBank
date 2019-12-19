@@ -6,6 +6,8 @@
 package com.zjyl1994.minecraftplugin.multicurrency.services;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
+import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
+import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.Conversable;
@@ -13,8 +15,6 @@ import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.ConversationPrefix;
-import org.bukkit.conversations.ExactMatchConversationCanceller;
 import org.bukkit.conversations.MessagePrompt;
 import org.bukkit.conversations.NullConversationPrefix;
 import org.bukkit.conversations.NumericPrompt;
@@ -53,10 +53,10 @@ public class ATMService implements ConversationAbandonedListener {
     @Override
     public void conversationAbandoned(ConversationAbandonedEvent event) {
         if (operateDone) {
-            this.player.sendMessage("正在为您办理业务");
+            this.player.sendMessage(ChatColor.GOLD+"指令已接纳，请稍等");
             Do();
         } else {
-            this.player.sendMessage("已退出ATM机");
+            this.player.sendMessage(ChatColor.GOLD+"已退出ATM机");
         }
     }
 
@@ -66,9 +66,20 @@ public class ATMService implements ConversationAbandonedListener {
     }
     
     public void Do(){
-        player.sendMessage(feature);
-        player.sendMessage(featureState);
-        player.sendMessage(argument.toArray(new String[0]));
+//        player.sendMessage(feature);
+//        player.sendMessage(featureState);
+//        player.sendMessage(argument.toArray(new String[0]));
+        switch(feature){
+            case "pay":
+                AccountCMD.getInstance().transferToAccount(player, argument.get(0), argument.get(1), argument.get(2));
+                break;
+            case "check":
+                CheckCMD.getInstance().makeCheck(player, argument.get(0), argument.get(1));
+                break;
+            case "cash":
+                CheckCMD.getInstance().cashCheck(player);
+                break;
+        }
     }
 
     // 欢迎句
@@ -104,7 +115,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         protected String getFailedValidationText(ConversationContext context, Number invalidInput) {
-            return "所选功能不在本机服务范围内";
+            return ChatColor.GOLD+"所选功能不在本机服务范围内";
         }
 
         @Override
@@ -135,7 +146,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            return ChatColor.BLUE + "请输入" + ChatColor.GOLD + "收款人" + ChatColor.BLUE + "账号";
+            return ChatColor.GOLD + "请输入收款人账号";
         }
 
         @Override
@@ -156,7 +167,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            return ChatColor.BLUE + "请输入" + ChatColor.GOLD + "货币代码";
+            return ChatColor.GOLD + "请输入货币代码";
         }
 
         @Override
@@ -181,7 +192,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            return ChatColor.BLUE + "请输入" + ChatColor.GOLD + "金额";
+            return ChatColor.GOLD + "请输入金额";
         }
 
         @Override
@@ -191,7 +202,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         protected String getFailedValidationText(ConversationContext context, Number invalidInput) {
-            return "金额必须大于0";
+            return ChatColor.GOLD+"金额必须大于0";
         }
 
         @Override
