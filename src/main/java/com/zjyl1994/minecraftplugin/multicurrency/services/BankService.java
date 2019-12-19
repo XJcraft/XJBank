@@ -6,7 +6,9 @@
 package com.zjyl1994.minecraftplugin.multicurrency.services;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeHelper;
@@ -16,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
@@ -25,6 +28,7 @@ import java.util.logging.Level;
  */
 public class BankService {
 
+    private static final String SELECT_INFO = "SELECT account.code,currency.name,account.balance FROM account LEFT JOIN currency ON account.code = currency.code WHERE account.username =  ?";
     private static final String SELECT_BALANCE = "SELECT `balance` FROM `account` WHERE `username` = ? AND `code` = ?";
     private static final String UPDATE_BALANCE = "INSERT INTO `account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
@@ -32,7 +36,7 @@ public class BankService {
     // 查询用户特定币种的余额
     public static OperateResult queryCurrencyBalance(String username, String currencyCode) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);) {
             BigDecimal balance;
             try {
                 selectBalance.setString(1, username);
@@ -59,7 +63,7 @@ public class BankService {
     // payer 付款人 payee 收款人 currencyCode 货币代码 amount 金额
     public static OperateResult transferTo(String payer, String payee, String currencyCode, BigDecimal amount, TxTypeEnum txType, String remark) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
             if (!AccountHelper.isUnlimitedAccount(payer)) {
                 // 非无限账户需要检查付款人有没有足够的钱
                 BigDecimal payerBalance; // 付款人余额
@@ -135,6 +139,32 @@ public class BankService {
         } catch (SQLException e) {
             MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[transferTo SQLException]{0}", e.getMessage());
             return new OperateResult(false, "转账失败-数据库异常");
+        }
+    }
+
+    // 查询余额
+    public static OperateResult getAccountInfo(String username) {
+        try (
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectInfo = connection.prepareStatement(SELECT_INFO);) {
+            ArrayList<AccountBalanceEntity> detail = new ArrayList<>();
+            try {
+                selectInfo.setString(1, username);
+                ResultSet result = selectInfo.executeQuery();
+                while (result.next()) {
+                    String currencyCode = result.getString("code");
+                    String currencyName = result.getString("name");
+                    BigDecimal balance = result.getBigDecimal("balance");
+                    detail.add(new AccountBalanceEntity(currencyCode, currencyName, balance));
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+            return new OperateResult(true, "OK", detail);
+        } catch (SQLException e) {
+            MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getAccountInfo SQLException]{0}", e.getMessage());
+            return new OperateResult(false, "查询失败-数据库异常");
         }
     }
 }

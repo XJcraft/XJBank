@@ -61,6 +61,9 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
                 case "cash":
                     excuteCash(commandSender, command, s, strings);
                     break;
+                case "info":
+                    excuteInfo(commandSender, command, s, strings);
+                    break;
                 case "bluk":
                     excuteBluk(commandSender, command, s, strings);
                     break;
@@ -162,5 +165,11 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         if (strings[1].equalsIgnoreCase("cash")) {
             checkInstance.cashBlukCheck(p);
         }
+    }
+    
+    // 查询账户信息（余额等） /bank info
+    private void excuteInfo(CommandSender commandSender, Command command, String s, String[] strings) {
+        Player p = (Player) commandSender;
+        accountInstance.getAccountInfo(p);
     }
 }

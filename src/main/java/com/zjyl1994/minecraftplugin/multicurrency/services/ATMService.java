@@ -53,10 +53,10 @@ public class ATMService implements ConversationAbandonedListener {
     @Override
     public void conversationAbandoned(ConversationAbandonedEvent event) {
         if (operateDone) {
-            this.player.sendMessage(ChatColor.GOLD+"指令已接纳，请稍等");
+            this.player.sendMessage(ChatColor.GOLD+"指示已接纳，请稍等\n");
             Do();
         } else {
-            this.player.sendMessage(ChatColor.GOLD+"已退出ATM机");
+            this.player.sendMessage(ChatColor.GOLD+"您已退出ATM机\n");
         }
     }
 
@@ -79,6 +79,9 @@ public class ATMService implements ConversationAbandonedListener {
             case "cash":
                 CheckCMD.getInstance().cashCheck(player);
                 break;
+            case "balance":
+                AccountCMD.getInstance().getAccountInfo(player);
+                break;
         }
     }
 
@@ -87,7 +90,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            return ChatColor.GOLD + "欢迎使用XJCraft金融管理局ATM机\n您可通过输入exit随时退出ATM机";
+            return ChatColor.GOLD + "\n欢迎使用XJCraft金融管理局ATM机\n您可通过输入exit随时退出ATM机";
         }
 
         @Override
@@ -105,12 +108,13 @@ public class ATMService implements ConversationAbandonedListener {
             sb.append("1.直接转账\n");
             sb.append("2.开出支票\n");
             sb.append("3.兑现支票\n");
+            sb.append("4.查询余额\n");
             return sb.toString();
         }
 
         @Override
         protected boolean isNumberValid(ConversationContext context, Number input) {
-            return input.intValue() > 0 && input.intValue() < 4;
+            return input.intValue() > 0 && input.intValue() < 5;
         }
 
         @Override
@@ -131,6 +135,10 @@ public class ATMService implements ConversationAbandonedListener {
                     return new CurrencyCodePrompt();
                 case 3: // 兑现支票
                     feature = "cash";
+                    operateDone = true;
+                    return Prompt.END_OF_CONVERSATION;
+                case 4: // 查询余额
+                    feature = "balance";
                     operateDone = true;
                     return Prompt.END_OF_CONVERSATION;
                 default: // 无操作
