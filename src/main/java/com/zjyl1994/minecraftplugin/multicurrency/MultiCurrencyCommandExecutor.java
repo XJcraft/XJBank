@@ -8,18 +8,13 @@ package com.zjyl1994.minecraftplugin.multicurrency;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.CheckUtil;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.ItemHelper;
-import java.math.BigDecimal;
-import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 /**
  *
@@ -167,9 +162,13 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         }
     }
     
-    // 查询账户信息（余额等） /bank info
+    // 查询账户余额或查询货币详情 /bank info (货币代码)
     private void excuteInfo(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
-        accountInstance.getAccountInfo(p);
+        if(strings.length == 2){
+            currencyInstance.currencyInfoCommand(p, strings[1]);
+        }else{
+            accountInstance.getAccountInfo(p);
+        }
     }
 }

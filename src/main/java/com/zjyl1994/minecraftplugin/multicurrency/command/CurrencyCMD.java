@@ -7,6 +7,7 @@ package com.zjyl1994.minecraftplugin.multicurrency.command;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CurrencyService;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyInfoEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -108,6 +109,39 @@ public class CurrencyCMD {
                             p.sendMessage(currencyCode.toUpperCase() + "重命名成功");
                         } else {
                             p.sendMessage(renameCurrency.getReason());
+                        }
+                    }
+                });
+            }
+        });
+    }
+    
+    public void currencyInfoCommand(Player p,String currencyCode){
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
+            @Override
+            public void run() {
+                OperateResult currencyInfo = CurrencyService.getCurrencyInfo(currencyCode.toUpperCase());
+                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
+                    @Override
+                    public void run() {
+                        if (currencyInfo.getSuccess()) {
+                            CurrencyInfoEntity cie = (CurrencyInfoEntity)currencyInfo.getData();
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("==== ");
+                            sb.append(currencyCode.toUpperCase());
+                            sb.append(" ====\n货币名称：");
+                            sb.append(cie.getName());
+                            sb.append("\n货币发行人：");
+                            sb.append(cie.getOwner());
+                            sb.append("\n货币总发行量：");
+                            sb.append(cie.getTotal().setScale(4, RoundingMode.DOWN).toString());
+                            sb.append("\n储备金总量：");
+                            sb.append(cie.getReserve().setScale(4, RoundingMode.DOWN).toString());
+                            sb.append("\n玩家存款总量：");
+                            sb.append(cie.getBalanceSum().setScale(4, RoundingMode.DOWN).toString());
+                            p.sendMessage(sb.toString());
+                        } else {
+                            p.sendMessage(currencyInfo.getReason());
                         }
                     }
                 });

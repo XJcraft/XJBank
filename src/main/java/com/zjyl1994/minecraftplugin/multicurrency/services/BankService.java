@@ -8,7 +8,6 @@ package com.zjyl1994.minecraftplugin.multicurrency.services;
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeHelper;

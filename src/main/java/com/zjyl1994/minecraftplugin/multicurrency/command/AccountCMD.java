@@ -9,7 +9,6 @@ import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.services.BankService;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CurrencyService;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import java.math.BigDecimal;

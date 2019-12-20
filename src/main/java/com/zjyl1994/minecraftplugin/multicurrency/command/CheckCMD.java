@@ -6,7 +6,6 @@
 package com.zjyl1994.minecraftplugin.multicurrency.command;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
-import com.zjyl1994.minecraftplugin.multicurrency.services.BankService;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CheckService;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CheckUtil;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;

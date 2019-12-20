@@ -7,6 +7,7 @@ package com.zjyl1994.minecraftplugin.multicurrency.services;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyInfoEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import java.math.BigDecimal;
@@ -29,6 +30,9 @@ public class CurrencyService {
     private static final String UPDATE_BALANCE = "INSERT INTO `account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String UPDATE_CURRENCY_TOTAL = "UPDATE currency SET `total` = `total` + ? WHERE `code` = ?";
     private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
+    private static final String SELECT_CURRENCY_INFO = "SELECT * FROM (SELECT owner,name,total AS currencyTotal FROM currency WHERE CODE = ?) AS a,\n" +
+"(SELECT balance AS reserveBalance FROM account WHERE username = CONCAT(\"$\",?)) AS b,\n" +
+"(SELECT SUM(balance)AS accountBalanceSum FROM account WHERE username != CONCAT(\"$\",?) AND CODE = ?) AS c;";
 
     // 检查是否货币持有人
     public static Boolean isCurrencyOwner(String currencyCode, String playerName) {
@@ -187,6 +191,36 @@ public class CurrencyService {
             }
         } else {
             return new OperateResult(false, "您并非此货币的发行者");
+        }
+    }
+
+    // 获取货币详细信息
+    public static OperateResult getCurrencyInfo(String currencyCode) {
+        try (
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY_INFO);) {
+            CurrencyInfoEntity cie = new CurrencyInfoEntity();
+            try {
+                selectCurrency.setString(1, currencyCode);
+                selectCurrency.setString(2, currencyCode);
+                selectCurrency.setString(3, currencyCode);
+                selectCurrency.setString(4, currencyCode);
+                ResultSet result = selectCurrency.executeQuery();
+                if (result.next()) {
+                    cie.setOwner(result.getString("owner"));
+                    cie.setName(result.getString("name"));
+                    cie.setTotal(result.getBigDecimal("currencyTotal"));
+                    cie.setReserve(result.getBigDecimal("reserveBalance"));
+                    cie.setBalanceSum(result.getBigDecimal("accountBalanceSum"));
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+            return new OperateResult(true, "OK", cie);
+        } catch (SQLException e) {
+            MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getCurrencyInfo SQLException]{0}", e.getMessage());
+            return new OperateResult(false, "获取货币信息失败-数据库异常");
         }
     }
 }
