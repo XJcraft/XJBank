@@ -136,7 +136,7 @@ public class CurrencyService {
                     insertLog.setInt(3, TxTypeEnum.CURRENCY_RESERVE_INCREASE.ordinal());
                     insertLog.setString(4, currencyCode);
                     insertLog.setBigDecimal(5, roundAmount);
-                    insertLog.setString(6, currencyCode + " 准备金新增 " + roundAmount.toString());
+                    insertLog.setString(6, "");
                     insertLog.executeUpdate();
                     connection.commit();
                 } catch (SQLException e) {
@@ -177,7 +177,7 @@ public class CurrencyService {
                     insertLog.setInt(3, TxTypeEnum.CURRENCY_RESERVE_DECREASE.ordinal());
                     insertLog.setString(4, currencyCode);
                     insertLog.setBigDecimal(5, roundAmount);
-                    insertLog.setString(6, currencyCode + " 准备金减少 " + roundAmount.toString());
+                    insertLog.setString(6, "");
                     insertLog.executeUpdate();
                     connection.commit();
                 } catch (SQLException e) {

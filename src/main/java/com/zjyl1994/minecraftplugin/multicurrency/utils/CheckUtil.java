@@ -77,7 +77,7 @@ public class CheckUtil {
         // 检查数字签名
         String calcHash = generateCheckHash(checkId, currencyCode, amount, issuer, dateTimeStr);
         if (calcHash.equals(checkHash)) {
-            return Optional.of(new CurrencyEntity(currencyCode, amount));
+            return Optional.of(new CurrencyEntity(currencyCode, amount, issuer));
         } else {
             return Optional.empty();
         }

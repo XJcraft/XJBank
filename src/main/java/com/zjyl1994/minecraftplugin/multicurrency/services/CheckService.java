@@ -19,11 +19,11 @@ public class CheckService {
 
     // 开出一张支票
     public static OperateResult makeCheck(String username, String currencyCode, BigDecimal amount) {
-        return BankService.transferTo(username, AccountHelper.CHECK_CENTER, currencyCode, amount, TxTypeEnum.CHECK_TRANSFER_OUT, "支票开出");
+        return BankService.transferTo(username, AccountHelper.CHECK_CENTER, currencyCode, amount, TxTypeEnum.CHECK_TRANSFER_OUT, "");
     }
 
     // 兑现一张支票
     public static OperateResult cashCheck(String username, String currencyCode, BigDecimal amount, String remark) {
-        return BankService.transferTo(AccountHelper.CHECK_CENTER, username, currencyCode, amount, TxTypeEnum.CHECK_TRANSFER_OUT, "支票兑付" + remark);
+        return BankService.transferTo(AccountHelper.CHECK_CENTER, username, currencyCode, amount, TxTypeEnum.CHECK_TRANSFER_OUT, remark);
     }
 }

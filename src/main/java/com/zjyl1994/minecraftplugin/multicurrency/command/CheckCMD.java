@@ -78,14 +78,13 @@ public class CheckCMD {
             p.sendMessage("请手持有效支票再试");
         } else {
             CurrencyEntity ce = checkValue.get();
-            // 获得玩家位置信息
-            String remark = MiscUtil.getPlayerLocationString(p);
+            
             Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
                 @Override
                 public void run() {
                     String currencyCode = ce.getCurrencyCode().toUpperCase();
                     BigDecimal amount = ce.getAmount().setScale(4, RoundingMode.DOWN);
-                    OperateResult transferResult = CheckService.cashCheck(p.getName(), currencyCode, amount, remark);
+                    OperateResult transferResult = CheckService.cashCheck(p.getName(), currencyCode, amount, ce.getRemark() + "的支票");
                     Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                         @Override
                         public void run() {
@@ -147,7 +146,6 @@ public class CheckCMD {
     // 批量兑付支票
     public void cashBlukCheck(Player p) {
         PlayerInventory inventory = p.getInventory();
-        String remark = MiscUtil.getPlayerLocationString(p);
         int invSize = inventory.getSize();
         for (int i = 0; i < invSize; i++) {
             ItemStack checkItem = inventory.getItem(i);
@@ -157,7 +155,7 @@ public class CheckCMD {
                     @Override
                     public void run() {
                         CurrencyEntity ce = checkValue.get();
-                        OperateResult transferResult = CheckService.cashCheck(p.getName(), ce.getCurrencyCode(), ce.getAmount(), "批量兑付支票"+remark);
+                        OperateResult transferResult = CheckService.cashCheck(p.getName(), ce.getCurrencyCode(), ce.getAmount(),  ce.getRemark()+"的支票");
                         Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                             @Override
                             public void run() {

@@ -14,18 +14,28 @@ import java.math.BigDecimal;
 public class CurrencyEntity {
     String currencyCode;
     BigDecimal amount;
+    String remark;
 
     public CurrencyEntity(String currencyCode, BigDecimal amount) {
         this.currencyCode = currencyCode;
         this.amount = amount;
     }
-
+    public CurrencyEntity(String currencyCode, BigDecimal amount,String remark) {
+        this.currencyCode = currencyCode;
+        this.amount = amount;
+        this.remark = remark;
+    }
+    
     public String getCurrencyCode() {
         return currencyCode;
     }
 
     public BigDecimal getAmount() {
         return amount;
+    }
+
+    public String getRemark() {
+        return remark;
     }
     
 }

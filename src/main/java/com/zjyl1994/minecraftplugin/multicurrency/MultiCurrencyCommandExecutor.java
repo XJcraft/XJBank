@@ -9,6 +9,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.ItemHelper;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -62,6 +63,9 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
                 case "bluk":
                     excuteBluk(commandSender, command, s, strings);
                     break;
+                case "log":
+                    excuteLog(commandSender, command, s, strings);
+                    break;
                 case "test":
                     excuteTest(commandSender, command, s, strings);
                     break;
@@ -76,15 +80,7 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     private void excuteTest(CommandSender commandSender, Command command, String s, String[] strings) {
         //commandSender.sendMessage(((Player) commandSender).getInventory().getItemInMainHand().getType().name());
         Player p = (Player) commandSender;
-        ItemStack is = new ItemStack(Material.PAPER);
-        is.setAmount(4);
-        if (ItemHelper.checkPlayerItemStack(p, is)) {
-            p.sendMessage("有4张纸");
-            ItemHelper.removePlayerItemStack(p, is);
-            p.sendMessage("已移除4张纸");
-        } else {
-            p.sendMessage("不包含4张纸");
-        }
+        AccountCMD.getInstance().getAccountTradeLog(p, 1);
     }
 
     // 新增货币 /bank currnecy new [货币代码] [货币名称]
@@ -161,14 +157,29 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
             checkInstance.cashBlukCheck(p);
         }
     }
-    
+
     // 查询账户余额或查询货币详情 /bank info (货币代码)
     private void excuteInfo(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
-        if(strings.length == 2){
+        if (strings.length == 2) {
             currencyInstance.currencyInfoCommand(p, strings[1]);
-        }else{
+        } else {
             accountInstance.getAccountInfo(p);
+        }
+    }
+
+    // 查询交易日志 /bank log (页码)
+    private void excuteLog(CommandSender commandSender, Command command, String s, String[] strings) {
+        Player p = (Player) commandSender;
+        if (strings.length == 2) {
+            Integer pageNo = MiscUtil.getIntegerFromString(strings[1]);
+            if (pageNo > 0) {
+                accountInstance.getAccountTradeLog(p, pageNo);
+            } else {
+                p.sendMessage("没有第0页");
+            }
+        } else {
+            accountInstance.getAccountTradeLog(p, 1);
         }
     }
 }

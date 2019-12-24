@@ -53,10 +53,10 @@ public class ATMService implements ConversationAbandonedListener {
     @Override
     public void conversationAbandoned(ConversationAbandonedEvent event) {
         if (operateDone) {
-            this.player.sendMessage(ChatColor.GOLD+"指示已接纳，请稍等\n");
+            this.player.sendMessage(ChatColor.GOLD + "指示已接纳，请稍等\n");
             Do();
         } else {
-            this.player.sendMessage(ChatColor.GOLD+"您已退出ATM机\n");
+            this.player.sendMessage(ChatColor.GOLD + "您已退出ATM机\n");
         }
     }
 
@@ -64,12 +64,12 @@ public class ATMService implements ConversationAbandonedListener {
         this.player = p;
         factory.buildConversation((Conversable) p).begin();
     }
-    
-    public void Do(){
+
+    public void Do() {
 //        player.sendMessage(feature);
 //        player.sendMessage(featureState);
 //        player.sendMessage(argument.toArray(new String[0]));
-        switch(feature){
+        switch (feature) {
             case "pay":
                 AccountCMD.getInstance().transferToAccount(player, argument.get(0), argument.get(1), argument.get(2));
                 break;
@@ -81,6 +81,9 @@ public class ATMService implements ConversationAbandonedListener {
                 break;
             case "balance":
                 AccountCMD.getInstance().getAccountInfo(player);
+                break;
+            case "log":
+                AccountCMD.getInstance().getAccountTradeLog(player, 1);
                 break;
         }
     }
@@ -109,17 +112,18 @@ public class ATMService implements ConversationAbandonedListener {
             sb.append("2.开出支票\n");
             sb.append("3.兑现支票\n");
             sb.append("4.查询余额\n");
+            sb.append("5.账单查询\n");
             return sb.toString();
         }
 
         @Override
         protected boolean isNumberValid(ConversationContext context, Number input) {
-            return input.intValue() > 0 && input.intValue() < 5;
+            return input.intValue() > 0 && input.intValue() < 6;
         }
 
         @Override
         protected String getFailedValidationText(ConversationContext context, Number invalidInput) {
-            return ChatColor.GOLD+"所选功能不在本机服务范围内";
+            return ChatColor.GOLD + "所选功能不在本机服务范围内";
         }
 
         @Override
@@ -139,6 +143,10 @@ public class ATMService implements ConversationAbandonedListener {
                     return Prompt.END_OF_CONVERSATION;
                 case 4: // 查询余额
                     feature = "balance";
+                    operateDone = true;
+                    return Prompt.END_OF_CONVERSATION;
+                case 5: // 账单查询
+                    feature = "log";
                     operateDone = true;
                     return Prompt.END_OF_CONVERSATION;
                 default: // 无操作
@@ -210,7 +218,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         protected String getFailedValidationText(ConversationContext context, Number invalidInput) {
-            return ChatColor.GOLD+"金额必须大于0";
+            return ChatColor.GOLD + "金额必须大于0";
         }
 
         @Override

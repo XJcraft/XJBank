@@ -9,6 +9,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.TxLogEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeHelper;
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -31,6 +33,8 @@ public class BankService {
     private static final String SELECT_BALANCE = "SELECT `balance` FROM `account` WHERE `username` = ? AND `code` = ?";
     private static final String UPDATE_BALANCE = "INSERT INTO `account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
+    private static final String SELECT_TX_LOG = "SELECT * FROM tx_log WHERE username = ? ORDER BY tx_time DESC LIMIT ?,5";
+    private static final String SELECT_TX_LOG_TOTAL_COUNT = "SELECT COUNT(1) FROM tx_log WHERE username = ?";
 
     // 查询用户特定币种的余额
     public static OperateResult queryCurrencyBalance(String username, String currencyCode) {
@@ -163,6 +167,62 @@ public class BankService {
             return new OperateResult(true, "OK", detail);
         } catch (SQLException e) {
             MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getAccountInfo SQLException]{0}", e.getMessage());
+            return new OperateResult(false, "查询失败-数据库异常");
+        }
+    }
+
+    // 查询交易日志
+    public static OperateResult getAccountTradeLog(String username, Integer pageNo) {
+        try (
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG);) {
+            ArrayList<TxLogEntity> detail = new ArrayList<>();
+            Integer pageOffset = (pageNo - 1) * 5;
+            try {
+                selectTxLog.setString(1, username);
+                selectTxLog.setInt(2, pageOffset);
+                ResultSet result = selectTxLog.executeQuery();
+                while (result.next()) {
+                    String txUsername = result.getString("tx_username");
+                    Timestamp txTime = result.getTimestamp("tx_time");
+                    TxTypeEnum txType = TxTypeEnum.values()[result.getInt("tx_type")];
+                    String currencyCode = result.getString("currency_code");
+                    BigDecimal amount = result.getBigDecimal("amount");
+                    String remark = result.getString("remark");
+                    detail.add(new TxLogEntity(txUsername, txTime, txType, currencyCode, amount, remark));
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+            return new OperateResult(true, "OK", detail);
+        } catch (SQLException e) {
+            MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getAccountTradeLog SQLException]{0}", e.getMessage());
+            return new OperateResult(false, "查询失败-数据库异常");
+        }
+    }
+
+    // 查询交易日志对应的页数
+    public static OperateResult getAccountTradeLogTotalPage(String username) {
+        try (
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG_TOTAL_COUNT);) {
+            Integer totalCount;
+            try {
+                selectTxLog.setString(1, username);
+                ResultSet result = selectTxLog.executeQuery();
+                if (result.next()) {
+                    totalCount = result.getInt(1);
+                } else { // 没有记录
+                    totalCount = 0;
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+            return new OperateResult(true, "OK", (totalCount + 4) / 5);
+        } catch (SQLException e) {
+            MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getAccountTradeLogTotalPage SQLException]{0}", e.getMessage());
             return new OperateResult(false, "查询失败-数据库异常");
         }
     }
