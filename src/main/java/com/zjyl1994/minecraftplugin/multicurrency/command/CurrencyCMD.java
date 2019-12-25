@@ -39,21 +39,15 @@ public class CurrencyCMD {
     }
 
     public void newCommand(Player p, String currencyCode, String currencyName) {
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                OperateResult newCurrency = CurrencyService.newCurrency(currencyCode.toUpperCase(), currencyName, p.getName());
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (newCurrency.getSuccess()) {
-                            p.sendMessage(currencyName + "新建完成，货币代码" + currencyCode.toUpperCase());
-                        } else {
-                            p.sendMessage(newCurrency.getReason());
-                        }
-                    }
-                });
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            OperateResult newCurrency = CurrencyService.newCurrency(currencyCode.toUpperCase(), currencyName, p.getName());
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (newCurrency.getSuccess()) {
+                    p.sendMessage(currencyName + "新建完成，货币代码" + currencyCode.toUpperCase());
+                } else {
+                    p.sendMessage(newCurrency.getReason());
+                }
+            });
         });
     }
 
