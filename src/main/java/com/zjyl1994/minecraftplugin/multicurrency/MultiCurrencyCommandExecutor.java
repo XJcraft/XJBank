@@ -8,8 +8,10 @@ package com.zjyl1994.minecraftplugin.multicurrency;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
+import com.zjyl1994.minecraftplugin.multicurrency.command.ExchangeCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.ItemHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,12 +29,14 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     private final CurrencyCMD currencyInstance;
     private final CheckCMD checkInstance;
     private final AccountCMD accountInstance;
+    private final ExchangeCMD exchangeInstance;
 
     public MultiCurrencyCommandExecutor(MultiCurrencyPlugin plugin) {
         this.plugin = plugin;
         this.currencyInstance = CurrencyCMD.getInstance();
         this.checkInstance = CheckCMD.getInstance();
         this.accountInstance = AccountCMD.getInstance();
+        this.exchangeInstance = ExchangeCMD.getInstance();
     }
 
     @Override
@@ -64,6 +68,9 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
                     break;
                 case "log":
                     excuteLog(commandSender, command, s, strings);
+                    break;
+                case "exchange":
+                    excuteExchange(commandSender, command, s, strings);
                     break;
                 case "test":
                     excuteTest(commandSender, command, s, strings);
@@ -180,6 +187,39 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
             }
         } else {
             accountInstance.getAccountTradeLog(p, 1);
+        }
+    }
+    // 货币兑换相关命令
+    // 获取汇率 /bank exchange get [卖出货币代码] [买入货币代码]
+    // 修改汇率 /bank exchange set [卖出货币代码] [买入货币代码] [货币汇率]
+    // 兑换货币 /bank exchange fx [卖出货币代码] [买入货币代码] [买入货币数量]
+    private void excuteExchange(CommandSender commandSender, Command command, String s, String[] strings) {
+        String helpMessage = ChatColor.GOLD+"货币兑换相关命令"+ChatColor.RESET+"\n获取汇率 /bank exchange get [卖出货币代码] [买入货币代码]\n修改汇率 /bank exchange set [卖出货币代码] [买入货币代码] [货币汇率]\n兑换货币 /bank exchange fx [卖出货币代码] [买入货币代码] [买入货币数量]";
+        Player p = (Player) commandSender;
+        if(strings.length>2){
+            if(strings[1].equalsIgnoreCase("get")){
+                if(strings.length == 4){
+                    exchangeInstance.getCommand(p, strings[2], strings[3]);
+                }else{
+                    p.sendMessage(helpMessage);
+                }
+            }
+            if(strings[1].equalsIgnoreCase("set")){
+                if(strings.length == 5){
+                    exchangeInstance.setCommand(p, strings[2], strings[3],strings[4]);
+                }else{
+                    p.sendMessage(helpMessage);
+                }
+            }
+            if(strings[1].equalsIgnoreCase("fx")){
+                if(strings.length == 5){
+                    exchangeInstance.exchangeCommand(p, strings[2], strings[3],strings[4]);
+                }else{
+                    p.sendMessage(helpMessage);
+                }
+            }
+        }else{
+            p.sendMessage(helpMessage);
         }
     }
 }

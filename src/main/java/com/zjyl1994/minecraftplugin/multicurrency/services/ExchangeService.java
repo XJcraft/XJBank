@@ -6,6 +6,7 @@
 package com.zjyl1994.minecraftplugin.multicurrency.services;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
+import static com.zjyl1994.minecraftplugin.multicurrency.services.CurrencyService.isCurrencyOwner;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import static com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum.CURRENCY_EXCHANGE_IN;
@@ -105,7 +106,7 @@ public class ExchangeService {
                 // 没有汇率，不可兑换
                 return new OperateResult(false, "兑换失败," + currencyCodeTo + "发行人没有指定" + currencyCodeFrom + "->" + currencyCodeTo + "的汇率");
             }
-            BigDecimal exchangeRequire = BigDecimal.ONE.divide(exchangeRate).multiply(amount);// 所需的外币数量
+            BigDecimal exchangeRequire = BigDecimal.ONE.divide(exchangeRate,6,RoundingMode.HALF_EVEN).multiply(amount);// 所需的外币数量
             // 检查玩家外币数量够不够
             BigDecimal playerBalance;
             try {
