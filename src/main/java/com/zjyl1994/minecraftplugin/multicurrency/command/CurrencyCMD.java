@@ -30,7 +30,6 @@ public class CurrencyCMD {
     }
 
     private static class SingletonHolder {
-
         private static final CurrencyCMD INSTANCE = new CurrencyCMD();
     }
 
@@ -52,94 +51,70 @@ public class CurrencyCMD {
     }
 
     public void incrCommand(Player p, String currencyCode, String amount) {
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
-                OperateResult reserveIncr = CurrencyService.reserveIncr(currencyCode.toUpperCase(), bdAmount, p.getName());
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (reserveIncr.getSuccess()) {
-                            p.sendMessage(currencyCode.toUpperCase() + "成功增发储备金" + bdAmount.toString());
-                        } else {
-                            p.sendMessage(reserveIncr.getReason());
-                        }
-                    }
-                });
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+            OperateResult reserveIncr = CurrencyService.reserveIncr(currencyCode.toUpperCase(), bdAmount, p.getName());
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (reserveIncr.getSuccess()) {
+                    p.sendMessage(currencyCode.toUpperCase() + "成功增发储备金" + bdAmount.toString());
+                } else {
+                    p.sendMessage(reserveIncr.getReason());
+                }
+            });
         });
     }
 
     public void decrCommand(Player p, String currencyCode, String amount) {
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
-                OperateResult reserveDecr = CurrencyService.reserveDecr(currencyCode.toUpperCase(), bdAmount, p.getName());
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (reserveDecr.getSuccess()) {
-                            p.sendMessage(currencyCode.toUpperCase() + "成功回收储备金" + bdAmount.toString());
-                        } else {
-                            p.sendMessage(reserveDecr.getReason());
-                        }
-                    }
-                });
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+            OperateResult reserveDecr = CurrencyService.reserveDecr(currencyCode.toUpperCase(), bdAmount, p.getName());
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (reserveDecr.getSuccess()) {
+                    p.sendMessage(currencyCode.toUpperCase() + "成功回收储备金" + bdAmount.toString());
+                } else {
+                    p.sendMessage(reserveDecr.getReason());
+                }
+            });
         });
     }
 
     public void renameCommand(Player p, String currencyCode, String currencyName) {
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                OperateResult renameCurrency = CurrencyService.renameCurrency(currencyCode.toUpperCase(), currencyName, p.getName());
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (renameCurrency.getSuccess()) {
-                            p.sendMessage(currencyCode.toUpperCase() + "重命名成功");
-                        } else {
-                            p.sendMessage(renameCurrency.getReason());
-                        }
-                    }
-                });
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            OperateResult renameCurrency = CurrencyService.renameCurrency(currencyCode.toUpperCase(), currencyName, p.getName());
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (renameCurrency.getSuccess()) {
+                    p.sendMessage(currencyCode.toUpperCase() + "重命名成功");
+                } else {
+                    p.sendMessage(renameCurrency.getReason());
+                }
+            });
         });
     }
     
-    public void currencyInfoCommand(Player p,String currencyCode){
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                OperateResult currencyInfo = CurrencyService.getCurrencyInfo(currencyCode.toUpperCase());
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (currencyInfo.getSuccess()) {
-                            CurrencyInfoEntity cie = (CurrencyInfoEntity)currencyInfo.getData();
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("==== ");
-                            sb.append(currencyCode.toUpperCase());
-                            sb.append(" ====\n货币名称：");
-                            sb.append(cie.getName());
-                            sb.append("\n货币发行人：");
-                            sb.append(cie.getOwner());
-                            sb.append("\n货币总发行量：");
-                            sb.append(cie.getTotal().setScale(4, RoundingMode.DOWN).toString());
-                            sb.append("\n储备金总量：");
-                            sb.append(cie.getReserve().setScale(4, RoundingMode.DOWN).toString());
-                            sb.append("\n玩家存款总量：");
-                            sb.append(cie.getBalanceSum().setScale(4, RoundingMode.DOWN).toString());
-                            p.sendMessage(sb.toString());
-                        } else {
-                            p.sendMessage(currencyInfo.getReason());
-                        }
-                    }
-                });
-            }
+    public void currencyInfoCommand(Player p,String currencyCode) {
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            OperateResult currencyInfo = CurrencyService.getCurrencyInfo(currencyCode.toUpperCase());
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (currencyInfo.getSuccess()) {
+                    CurrencyInfoEntity cie = (CurrencyInfoEntity)currencyInfo.getData();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("==== ");
+                    sb.append(currencyCode.toUpperCase());
+                    sb.append(" ====\n货币名称：");
+                    sb.append(cie.getName());
+                    sb.append("\n货币发行人：");
+                    sb.append(cie.getOwner());
+                    sb.append("\n货币总发行量：");
+                    sb.append(cie.getTotal().setScale(4, RoundingMode.DOWN).toString());
+                    sb.append("\n储备金总量：");
+                    sb.append(cie.getReserve().setScale(4, RoundingMode.DOWN).toString());
+                    sb.append("\n玩家存款总量：");
+                    sb.append(cie.getBalanceSum().setScale(4, RoundingMode.DOWN).toString());
+                    p.sendMessage(sb.toString());
+                } else {
+                    p.sendMessage(currencyInfo.getReason());
+                }
+            });
         });
     }
 }
