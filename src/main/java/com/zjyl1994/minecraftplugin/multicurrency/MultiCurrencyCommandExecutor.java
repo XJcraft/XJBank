@@ -38,11 +38,10 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
-            commandSender.sendMessage("此指令仅支持用户使用");
-            return false;
-        } else if (strings.length == 0) {
-            return false;
-        } else if (strings.length >= 1) {
+            commandSender.sendMessage("此指令仅支持玩家使用");
+        } else if (strings.length <= 0) {
+            commandSender.sendMessage("缺少子命令"); // 如果有 help 的话，这种情况应该执行 help
+        } else {
             String lowerCaseCMD = strings[0].toLowerCase();
             switch (lowerCaseCMD) {
                 case "currency":
@@ -70,11 +69,12 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
                     excuteTest(commandSender, command, s, strings);
                     break;
                 default:
-                    return false;
+                    commandSender.sendMessage(String.format("未知的子命令 %s", lowerCaseCMD));
+                    break;
             }
-            return true;
         }
-        return false;
+
+        return true; // 这里返回 false 时会输出 plugin.yml 中的 usage
     }
 
     private void excuteTest(CommandSender commandSender, Command command, String s, String[] strings) {
