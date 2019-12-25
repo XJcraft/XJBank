@@ -6,30 +6,38 @@
 package com.zjyl1994.minecraftplugin.multicurrency.utils;
 
 /**
- *
+ * 操作结果
  * @author zjyl1
  */
 public class OperateResult {
-    Boolean success;
-    String reason;
-    Object data;
+    /**
+     * 操作是否成功
+     */
+    private boolean success;
+    /**
+     * 附加说明
+     */
+    private String reason;
+    /**
+     * 附加数据
+     */
+    private Object data;
     
-    public OperateResult(Boolean success){
-        this.success = success;
+    public OperateResult(boolean success) {
+        this(success, null);
     }
     
-    public OperateResult(Boolean success,String reason){
-        this.success = success;
-        this.reason = reason;
+    public OperateResult(boolean success, String reason) {
+        this(success, reason, null);
     }
     
-    public OperateResult(Boolean success,String reason,Object data){
+    public OperateResult(boolean success, String reason, Object data){
         this.success = success;
         this.reason = reason;
         this.data = data;
     }
     
-    public Boolean getSuccess() {
+    public boolean getSuccess() {
         return success;
     }
 
