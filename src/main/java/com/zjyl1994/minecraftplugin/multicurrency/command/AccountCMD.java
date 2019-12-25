@@ -167,6 +167,12 @@ public class AccountCMD {
                                                 resultString.append(x.getTxUsername());
                                                 resultString.append("转账");
                                                 break;
+                                            case CURRENCY_EXCHANGE_IN:
+                                                resultString.append("货币兑换入账");
+                                                break;
+                                            case CURRENCY_EXCHANGE_OUT:
+                                                resultString.append("货币兑换扣款");
+                                                break;
                                             case CHECK_TRANSFER_OUT:
                                                 resultString.append("支票开出");
                                                 break;
