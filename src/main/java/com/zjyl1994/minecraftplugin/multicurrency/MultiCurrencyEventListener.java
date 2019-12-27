@@ -10,6 +10,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.services.ATMService;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,7 +46,8 @@ public class MultiCurrencyEventListener implements Listener {
                 // 银行相关牌子
                 if(ChatColor.stripColor(sign.getLine(0).trim()).equalsIgnoreCase("[ATM]")){
                     // 此处进入对话
-                    ATMService atmInstance = new ATMService(plugin);
+                    Location signLocation = sign.getBlock().getLocation();
+                    ATMService atmInstance = new ATMService(plugin,signLocation);
                     atmInstance.Start(p);
                 }
             }

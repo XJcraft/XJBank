@@ -8,8 +8,10 @@ package com.zjyl1994.minecraftplugin.multicurrency.services;
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.OutOfRangeCanceller;
 import java.util.ArrayList;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
@@ -37,12 +39,17 @@ public class ATMService implements ConversationAbandonedListener {
     private String featureState; // 功能的步骤
     private ArrayList<String> argument; // 参数
     private Boolean operateDone; // 完成
+    
+    private Location signLocation; // 牌子位置
 
-    public ATMService(MultiCurrencyPlugin pluginInstance) {
+    public ATMService(MultiCurrencyPlugin pluginInstance,Location signLocation) {
         this.plugin = pluginInstance;
+        this.signLocation = signLocation;
         this.factory = new ConversationFactory(pluginInstance)
                 .withPrefix(new NullConversationPrefix())
                 .withFirstPrompt(new WelcomePrompt())
+                .withConversationCanceller(new OutOfRangeCanceller(pluginInstance, signLocation, 5))
+                .withTimeout(10)
                 .withEscapeSequence("exit").addConversationAbandonedListener(this);
         this.feature = "none"; // 默认什么都不做
         this.featureState = "none";
@@ -93,7 +100,7 @@ public class ATMService implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            return ChatColor.GOLD + "\n欢迎使用XJCraft金融管理局ATM机\n您可通过输入exit随时退出ATM机";
+            return ChatColor.GOLD + "\n欢迎使用XJCraft金融管理局ATM机\n您可随时输入\"exit\"退出ATM机！\n10秒无操作或者走太远都会自动退出，请及时操作！";
         }
 
         @Override
