@@ -6,12 +6,17 @@
 package com.zjyl1994.minecraftplugin.multicurrency.command;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
+import com.zjyl1994.minecraftplugin.multicurrency.services.BankService;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CurrencyService;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyInfoEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 /**
@@ -115,6 +120,43 @@ public class CurrencyCMD {
                     p.sendMessage(currencyInfo.getReason());
                 }
             });
+        });
+    }
+    
+    public void currencyGetBalanceCommand(Player p,String currencyCode){
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
+            @Override
+            public void run() {
+                String upperCurrencyCode = currencyCode.toUpperCase();
+                OperateResult accountInfo;
+                if (CurrencyService.isCurrencyOwner(upperCurrencyCode, p.getName())) {
+                    accountInfo = BankService.getAccountInfo("$"+upperCurrencyCode);
+                } else {
+                    accountInfo = new OperateResult(false, "您不是该货币的发行人，无权查看储备金帐户");
+                }
+                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
+                    @Override
+                    public void run() {
+                        if (accountInfo.getSuccess()) {
+                            var data = (ArrayList<AccountBalanceEntity>) (accountInfo.getData());
+                            StringBuilder resultString = new StringBuilder();
+
+                            resultString.append(ChatColor.GOLD).append(upperCurrencyCode).append("的储备金账户余额为\n").append(ChatColor.RESET);
+                            data.forEach(x -> {
+                                resultString.append(x.getCurrencyName());
+                                resultString.append(" (");
+                                resultString.append(x.getCurrencyCode());
+                                resultString.append(") ");
+                                resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).toString());
+                                resultString.append("\n");
+                            });
+                            p.sendMessage(resultString.toString());
+                        } else {
+                            p.sendMessage(accountInfo.getReason());
+                        }
+                    }
+                });
+            }
         });
     }
 }

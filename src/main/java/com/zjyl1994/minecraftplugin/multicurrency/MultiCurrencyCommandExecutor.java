@@ -9,15 +9,12 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.ExchangeCMD;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.ItemHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -95,27 +92,34 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     // 减少货币 /bank currency decr [货币代码] [减少货币数量]
     // 重命名货币 /bank currency rename [货币代码] [新货币名称]
     // 准备金提取 /bank currency get [货币代码] [货币数量]
+    // 查看准备金账户余额 /bank currency balance [货币代码]
     private void excuteCurrency(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (strings.length != 4) {
-            commandSender.sendMessage("参数不正确\n新建货币 /bank currency new [货币代码] [货币名称]\n增发货币 /bank currency incr [货币代码] [增发货币数量]\n减少货币 /bank currency decr [货币代码] [减少货币数量]\n重命名货币 /bank currency rename [货币代码] [新货币名称]\n准备金提取 /bank currency get [货币代码] [货币数量]");
+        Player p = (Player) commandSender;
+        if (strings.length == 4) {
+            if (strings[1].equalsIgnoreCase("new")) {
+                currencyInstance.newCommand(p, strings[2], strings[3]);
+            }
+            if (strings[1].equalsIgnoreCase("incr")) {
+                currencyInstance.incrCommand(p, strings[2], strings[3]);
+            }
+            if (strings[1].equalsIgnoreCase("decr")) {
+                currencyInstance.decrCommand(p, strings[2], strings[3]);
+            }
+            if (strings[1].equalsIgnoreCase("rename")) {
+                currencyInstance.renameCommand(p, strings[2], strings[3]);
+            }
+            if (strings[1].equalsIgnoreCase("get")) {
+                accountInstance.reserveTransferOut(p, strings[2], strings[3]);
+            }
             return;
         }
-        Player p = (Player) commandSender;
-        if (strings[1].equalsIgnoreCase("new")) {
-            currencyInstance.newCommand(p, strings[2], strings[3]);
+        if (strings.length == 3) {
+            if (strings[1].equalsIgnoreCase("balance")) {
+                currencyInstance.currencyGetBalanceCommand(p, strings[2]);
+            }
+            return;
         }
-        if (strings[1].equalsIgnoreCase("incr")) {
-            currencyInstance.incrCommand(p, strings[2], strings[3]);
-        }
-        if (strings[1].equalsIgnoreCase("decr")) {
-            currencyInstance.decrCommand(p, strings[2], strings[3]);
-        }
-        if (strings[1].equalsIgnoreCase("rename")) {
-            currencyInstance.renameCommand(p, strings[2], strings[3]);
-        }
-        if (strings[1].equalsIgnoreCase("get")) {
-            accountInstance.reserveTransferOut(p, strings[2], strings[3]);
-        }
+        commandSender.sendMessage("参数不正确\n新建货币 /bank currency new [货币代码] [货币名称]\n增发货币 /bank currency incr [货币代码] [增发货币数量]\n减少货币 /bank currency decr [货币代码] [减少货币数量]\n重命名货币 /bank currency rename [货币代码] [新货币名称]\n准备金提取 /bank currency get [货币代码] [货币数量]\n查看准备金账户余额 /bank currency balance [货币代码]");
     }
 
     // 直接转账 /bank pay [对方玩家名] [货币代码] [货币数量]
@@ -189,36 +193,37 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
             accountInstance.getAccountTradeLog(p, 1);
         }
     }
+
     // 货币兑换相关命令
     // 获取汇率 /bank exchange get [卖出货币代码] [买入货币代码]
     // 修改汇率 /bank exchange set [卖出货币代码] [买入货币代码] [货币汇率]
     // 兑换货币 /bank exchange fx [卖出货币代码] [买入货币代码] [买入货币数量]
     private void excuteExchange(CommandSender commandSender, Command command, String s, String[] strings) {
-        String helpMessage = ChatColor.GOLD+"货币兑换相关命令"+ChatColor.RESET+"\n获取汇率 /bank exchange get [卖出货币代码] [买入货币代码]\n修改汇率 /bank exchange set [卖出货币代码] [买入货币代码] [货币汇率]\n兑换货币 /bank exchange fx [卖出货币代码] [买入货币代码] [买入货币数量]";
+        String helpMessage = ChatColor.GOLD + "货币兑换相关命令" + ChatColor.RESET + "\n获取汇率 /bank exchange get [卖出货币代码] [买入货币代码]\n修改汇率 /bank exchange set [卖出货币代码] [买入货币代码] [货币汇率]\n兑换货币 /bank exchange fx [卖出货币代码] [买入货币代码] [买入货币数量]";
         Player p = (Player) commandSender;
-        if(strings.length>2){
-            if(strings[1].equalsIgnoreCase("get")){
-                if(strings.length == 4){
+        if (strings.length > 2) {
+            if (strings[1].equalsIgnoreCase("get")) {
+                if (strings.length == 4) {
                     exchangeInstance.getCommand(p, strings[2], strings[3]);
-                }else{
+                } else {
                     p.sendMessage(helpMessage);
                 }
             }
-            if(strings[1].equalsIgnoreCase("set")){
-                if(strings.length == 5){
-                    exchangeInstance.setCommand(p, strings[2], strings[3],strings[4]);
-                }else{
+            if (strings[1].equalsIgnoreCase("set")) {
+                if (strings.length == 5) {
+                    exchangeInstance.setCommand(p, strings[2], strings[3], strings[4]);
+                } else {
                     p.sendMessage(helpMessage);
                 }
             }
-            if(strings[1].equalsIgnoreCase("fx")){
-                if(strings.length == 5){
-                    exchangeInstance.exchangeCommand(p, strings[2], strings[3],strings[4]);
-                }else{
+            if (strings[1].equalsIgnoreCase("fx")) {
+                if (strings.length == 5) {
+                    exchangeInstance.exchangeCommand(p, strings[2], strings[3], strings[4]);
+                } else {
                     p.sendMessage(helpMessage);
                 }
             }
-        }else{
+        } else {
             p.sendMessage(helpMessage);
         }
     }
