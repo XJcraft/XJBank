@@ -35,6 +35,7 @@ public class CurrencyCMD {
     }
 
     private static class SingletonHolder {
+
         private static final CurrencyCMD INSTANCE = new CurrencyCMD();
     }
 
@@ -95,13 +96,13 @@ public class CurrencyCMD {
             });
         });
     }
-    
-    public void currencyInfoCommand(Player p,String currencyCode) {
+
+    public void currencyInfoCommand(Player p, String currencyCode) {
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             OperateResult currencyInfo = CurrencyService.getCurrencyInfo(currencyCode.toUpperCase());
             Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                 if (currencyInfo.getSuccess()) {
-                    CurrencyInfoEntity cie = (CurrencyInfoEntity)currencyInfo.getData();
+                    CurrencyInfoEntity cie = (CurrencyInfoEntity) currencyInfo.getData();
                     StringBuilder sb = new StringBuilder();
                     sb.append("==== ");
                     sb.append(currencyCode.toUpperCase());
@@ -122,41 +123,59 @@ public class CurrencyCMD {
             });
         });
     }
-    
-    public void currencyGetBalanceCommand(Player p,String currencyCode){
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                String upperCurrencyCode = currencyCode.toUpperCase();
-                OperateResult accountInfo;
-                if (CurrencyService.isCurrencyOwner(upperCurrencyCode, p.getName())) {
-                    accountInfo = BankService.getAccountInfo("$"+upperCurrencyCode);
-                } else {
-                    accountInfo = new OperateResult(false, "您不是该货币的发行人，无权查看储备金帐户");
-                }
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (accountInfo.getSuccess()) {
-                            var data = (ArrayList<AccountBalanceEntity>) (accountInfo.getData());
-                            StringBuilder resultString = new StringBuilder();
 
-                            resultString.append(ChatColor.GOLD).append(upperCurrencyCode).append("的储备金账户余额为\n").append(ChatColor.RESET);
-                            data.forEach(x -> {
-                                resultString.append(x.getCurrencyName());
-                                resultString.append(" (");
-                                resultString.append(x.getCurrencyCode());
-                                resultString.append(") ");
-                                resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).toString());
-                                resultString.append("\n");
-                            });
-                            p.sendMessage(resultString.toString());
-                        } else {
-                            p.sendMessage(accountInfo.getReason());
-                        }
-                    }
-                });
+    public void currencyGetBalanceCommand(Player p, String currencyCode) {
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            String upperCurrencyCode = currencyCode.toUpperCase();
+            OperateResult accountInfo;
+            if (CurrencyService.isCurrencyOwner(upperCurrencyCode, p.getName())) {
+                accountInfo = BankService.getAccountInfo("$" + upperCurrencyCode);
+            } else {
+                accountInfo = new OperateResult(false, "您不是该货币的发行人，无权查看储备金帐户");
             }
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
+                @Override
+                public void run() {
+                    if (accountInfo.getSuccess()) {
+                        var data = (ArrayList<AccountBalanceEntity>) (accountInfo.getData());
+                        StringBuilder resultString = new StringBuilder();
+
+                        resultString.append(ChatColor.GOLD).append(upperCurrencyCode).append("的储备金账户余额为\n").append(ChatColor.RESET);
+                        data.forEach(x -> {
+                            resultString.append(x.getCurrencyName());
+                            resultString.append(" (");
+                            resultString.append(x.getCurrencyCode());
+                            resultString.append(") ");
+                            resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).toString());
+                            resultString.append("\n");
+                        });
+                        p.sendMessage(resultString.toString());
+                    } else {
+                        p.sendMessage(accountInfo.getReason());
+                    }
+                }
+            });
+        });
+    }
+
+    public void currencyReservePayCommand(Player p, String username,String currencyCode, String payCurrencyCode, String amount) {
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            String upperCurrencyCode = currencyCode.toUpperCase(); // 准备金币种
+            String upperPayCurrencyCode = payCurrencyCode.toUpperCase(); // 待支付的币种
+            BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+            OperateResult accountInfo;
+            if (CurrencyService.isCurrencyOwner(upperCurrencyCode, p.getName())) {
+                accountInfo = BankService.transferTo("$" + upperCurrencyCode, username, upperPayCurrencyCode, bdAmount, TxTypeEnum.ELECTRONIC_TRANSFER_OUT, "准备金支付");
+            } else {
+                accountInfo = new OperateResult(false, "您不是该货币的发行人，无权操作储备金帐户");
+            }
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (accountInfo.getSuccess()) {
+                    p.sendMessage("成功从" + upperCurrencyCode + "准备金账户向" + username + "转账" + upperPayCurrencyCode + bdAmount.toString());
+                } else {
+                    p.sendMessage(accountInfo.getReason());
+                }
+            });
         });
     }
 }

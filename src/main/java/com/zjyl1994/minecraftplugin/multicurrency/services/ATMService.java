@@ -69,7 +69,7 @@ public class ATMService implements ConversationAbandonedListener {
         Sign sign = (Sign) this.signLocation.getBlock().getState();
         String signFeature = ChatColor.stripColor(sign.getLine(1).trim());
         switch (signFeature) {
-            case "[直接转账]":
+            case "直接转账":
                 feature = "pay";
                 featureState = "payUsername";
                 factory = new ConversationFactory(this.plugin)
@@ -79,25 +79,38 @@ public class ATMService implements ConversationAbandonedListener {
                         .withEscapeSequence("exit").addConversationAbandonedListener(this);
                 factory.buildConversation((Conversable) p).begin();
                 break;
-            case "[开出支票]":
-                feature = "check";
-                featureState = "checkCurrencyCode";
-                factory = new ConversationFactory(this.plugin)
-                        .withFirstPrompt(new CurrencyCodePrompt())
-                        .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
-                        .withTimeout(10)
-                        .withEscapeSequence("exit").addConversationAbandonedListener(this);
-                factory.buildConversation((Conversable) p).begin();
+            case "开出支票":
+                String signCurrencyCode = ChatColor.stripColor(sign.getLine(2).trim());
+                if (signCurrencyCode.isBlank()) {
+                    feature = "check";
+                    featureState = "checkCurrencyCode";
+                    factory = new ConversationFactory(this.plugin)
+                            .withFirstPrompt(new CurrencyCodePrompt())
+                            .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
+                            .withTimeout(10)
+                            .withEscapeSequence("exit").addConversationAbandonedListener(this);
+                    factory.buildConversation((Conversable) p).begin();
+                } else {
+                    feature = "check";
+                    featureState = "checkAmount";
+                    argument.add(signCurrencyCode.toUpperCase());
+                    factory = new ConversationFactory(this.plugin)
+                            .withFirstPrompt(new MoneyPrompt())
+                            .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
+                            .withTimeout(10)
+                            .withEscapeSequence("exit").addConversationAbandonedListener(this);
+                    factory.buildConversation((Conversable) p).begin();
+                }
                 break;
-            case "[兑现支票]":
+            case "兑现支票":
                 feature = "cash";
                 Do();
                 break;
-            case "[查询余额]":
+            case "查询余额":
                 feature = "balance";
                 Do();
                 break;
-            case "[账单查询]":
+            case "账单查询":
                 feature = "log";
                 Do();
                 break;
@@ -109,7 +122,7 @@ public class ATMService implements ConversationAbandonedListener {
                         .withTimeout(10)
                         .withEscapeSequence("exit").addConversationAbandonedListener(this);
                 factory.buildConversation((Conversable) p).begin();
-        }   
+        }
     }
 
     public void Do() {

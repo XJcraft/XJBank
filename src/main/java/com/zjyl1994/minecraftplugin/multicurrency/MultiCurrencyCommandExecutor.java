@@ -93,6 +93,7 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
     // 重命名货币 /bank currency rename [货币代码] [新货币名称]
     // 准备金提取 /bank currency get [货币代码] [货币数量]
     // 查看准备金账户余额 /bank currency balance [货币代码]
+    // 准备金付款 /bank currency pay [收款人] [准备金的货币代码] [待支付的货币代码] [货币数量]
     private void excuteCurrency(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
         if (strings.length == 4) {
@@ -116,6 +117,12 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         if (strings.length == 3) {
             if (strings[1].equalsIgnoreCase("balance")) {
                 currencyInstance.currencyGetBalanceCommand(p, strings[2]);
+            }
+            return;
+        }
+        if (strings.length == 6) {
+            if (strings[1].equalsIgnoreCase("pay")) {
+                currencyInstance.currencyReservePayCommand(p, strings[2], strings[3],strings[4],strings[5]);
             }
             return;
         }
