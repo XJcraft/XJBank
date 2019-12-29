@@ -38,7 +38,7 @@
    
 6. 查看准备金账户余额 `/bank currency balance [货币代码]`
 
-7. 准备金付款 `/bank currency pay [收款人] [货币代码] [货币数量]` 
+7. 准备金付款 `/bank currency pay [收款人] [准备金的货币代码] [待支付的货币代码] [货币数量]` 
 
 ### 转账
 

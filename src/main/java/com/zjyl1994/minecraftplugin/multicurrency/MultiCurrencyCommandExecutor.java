@@ -126,7 +126,7 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
             }
             return;
         }
-        commandSender.sendMessage("参数不正确\n新建货币 /bank currency new [货币代码] [货币名称]\n增发货币 /bank currency incr [货币代码] [增发货币数量]\n减少货币 /bank currency decr [货币代码] [减少货币数量]\n重命名货币 /bank currency rename [货币代码] [新货币名称]\n准备金提取 /bank currency get [货币代码] [货币数量]\n查看准备金账户余额 /bank currency balance [货币代码]");
+        commandSender.sendMessage("参数不正确\n新建货币 /bank currency new [货币代码] [货币名称]\n增发货币 /bank currency incr [货币代码] [增发货币数量]\n减少货币 /bank currency decr [货币代码] [减少货币数量]\n重命名货币 /bank currency rename [货币代码] [新货币名称]\n准备金提取 /bank currency get [货币代码] [货币数量]\n查看准备金账户余额 /bank currency balance [货币代码]\n准备金付款 /bank currency pay [收款人] [准备金的货币代码] [待支付的货币代码] [货币数量]");
     }
 
     // 直接转账 /bank pay [对方玩家名] [货币代码] [货币数量]
