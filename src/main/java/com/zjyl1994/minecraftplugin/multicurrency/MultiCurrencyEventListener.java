@@ -11,6 +11,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.services.ATMService;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,15 +27,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class MultiCurrencyEventListener implements Listener {
 
     private final MultiCurrencyPlugin plugin;
-    private final CurrencyCMD currencyInstance;
-    private final CheckCMD checkInstance;
-    private final AccountCMD accountInstance;
 
     public MultiCurrencyEventListener(MultiCurrencyPlugin plugin) {
         this.plugin = plugin;
-        this.currencyInstance = CurrencyCMD.getInstance();
-        this.checkInstance = CheckCMD.getInstance();
-        this.accountInstance = AccountCMD.getInstance();
     }
 
     @EventHandler

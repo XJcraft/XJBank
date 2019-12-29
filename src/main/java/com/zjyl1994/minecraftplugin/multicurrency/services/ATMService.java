@@ -12,6 +12,8 @@ import com.zjyl1994.minecraftplugin.multicurrency.utils.OutOfRangeCanceller;
 import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
@@ -31,7 +33,6 @@ import org.bukkit.entity.Player;
  */
 public class ATMService implements ConversationAbandonedListener {
 
-    private final ConversationFactory factory;
     private final MultiCurrencyPlugin plugin;
 
     private Player player; // 操作玩家
@@ -39,18 +40,12 @@ public class ATMService implements ConversationAbandonedListener {
     private String featureState; // 功能的步骤
     private ArrayList<String> argument; // 参数
     private Boolean operateDone; // 完成
-    
-    private Location signLocation; // 牌子位置
 
-    public ATMService(MultiCurrencyPlugin pluginInstance,Location signLocation) {
+    private final Location signLocation; // 牌子位置
+
+    public ATMService(MultiCurrencyPlugin pluginInstance, Location signLocation) {
         this.plugin = pluginInstance;
         this.signLocation = signLocation;
-        this.factory = new ConversationFactory(pluginInstance)
-                .withPrefix(new NullConversationPrefix())
-                .withFirstPrompt(new WelcomePrompt())
-                .withConversationCanceller(new OutOfRangeCanceller(pluginInstance, signLocation, 5))
-                .withTimeout(10)
-                .withEscapeSequence("exit").addConversationAbandonedListener(this);
         this.feature = "none"; // 默认什么都不做
         this.featureState = "none";
         this.argument = new ArrayList<>();
@@ -69,7 +64,52 @@ public class ATMService implements ConversationAbandonedListener {
 
     public void Start(Player p) {
         this.player = p;
-        factory.buildConversation((Conversable) p).begin();
+        ConversationFactory factory;
+        // 检查是否直达功能
+        Sign sign = (Sign) this.signLocation.getBlock().getState();
+        String signFeature = ChatColor.stripColor(sign.getLine(1).trim());
+        switch (signFeature) {
+            case "[直接转账]":
+                feature = "pay";
+                featureState = "payUsername";
+                factory = new ConversationFactory(this.plugin)
+                        .withFirstPrompt(new UsernamePrompt())
+                        .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
+                        .withTimeout(10)
+                        .withEscapeSequence("exit").addConversationAbandonedListener(this);
+                factory.buildConversation((Conversable) p).begin();
+                break;
+            case "[开出支票]":
+                feature = "check";
+                featureState = "checkCurrencyCode";
+                factory = new ConversationFactory(this.plugin)
+                        .withFirstPrompt(new CurrencyCodePrompt())
+                        .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
+                        .withTimeout(10)
+                        .withEscapeSequence("exit").addConversationAbandonedListener(this);
+                factory.buildConversation((Conversable) p).begin();
+                break;
+            case "[兑现支票]":
+                feature = "cash";
+                Do();
+                break;
+            case "[查询余额]":
+                feature = "balance";
+                Do();
+                break;
+            case "[账单查询]":
+                feature = "log";
+                Do();
+                break;
+            default:
+                // 进入UI界面
+                factory = new ConversationFactory(this.plugin)
+                        .withFirstPrompt(new WelcomePrompt())
+                        .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
+                        .withTimeout(10)
+                        .withEscapeSequence("exit").addConversationAbandonedListener(this);
+                factory.buildConversation((Conversable) p).begin();
+        }   
     }
 
     public void Do() {
