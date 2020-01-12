@@ -24,9 +24,9 @@ public class BankService {
     private static final String SELECT_INFO = "SELECT mc_account.code,mc_currency.name,mc_account.balance FROM mc_account LEFT JOIN mc_currency ON mc_account.code = mc_currency.code WHERE mc_account.username =  ?";
     private static final String SELECT_BALANCE = "SELECT `balance` FROM `mc_account` WHERE `username` = ? AND `code` = ?";
     private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
-    private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
-    private static final String SELECT_TX_LOG = "SELECT * FROM tx_log WHERE username = ? ORDER BY tx_time DESC LIMIT ?,5";
-    private static final String SELECT_TX_LOG_TOTAL_COUNT = "SELECT COUNT(1) FROM tx_log WHERE username = ?";
+    private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
+    private static final String SELECT_TX_LOG = "SELECT * FROM mc_tx_log WHERE username = ? ORDER BY tx_time DESC LIMIT ?,5";
+    private static final String SELECT_TX_LOG_TOTAL_COUNT = "SELECT COUNT(1) FROM mc_tx_log WHERE username = ?";
 
     // 查询用户特定币种的余额
     public static OperateResult queryCurrencyBalance(String username, String currencyCode) {
