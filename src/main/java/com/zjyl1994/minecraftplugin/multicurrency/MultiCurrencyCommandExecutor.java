@@ -17,7 +17,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- *
  * @author zjyl1994
  */
 public class MultiCurrencyCommandExecutor implements CommandExecutor {
@@ -122,7 +121,7 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         }
         if (strings.length == 6) {
             if (strings[1].equalsIgnoreCase("pay")) {
-                currencyInstance.currencyReservePayCommand(p, strings[2], strings[3],strings[4],strings[5]);
+                currencyInstance.currencyReservePayCommand(p, strings[2], strings[3], strings[4], strings[5]);
             }
             return;
         }

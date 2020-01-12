@@ -6,19 +6,11 @@
 package com.zjyl1994.minecraftplugin.multicurrency.services;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.TxLogEntity;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeHelper;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.*;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -29,9 +21,9 @@ import java.util.logging.Level;
  */
 public class BankService {
 
-    private static final String SELECT_INFO = "SELECT account.code,currency.name,account.balance FROM account LEFT JOIN currency ON account.code = currency.code WHERE account.username =  ?";
-    private static final String SELECT_BALANCE = "SELECT `balance` FROM `account` WHERE `username` = ? AND `code` = ?";
-    private static final String UPDATE_BALANCE = "INSERT INTO `account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
+    private static final String SELECT_INFO = "SELECT mc_account.code,mc_currency.name,mc_account.balance FROM mc_account LEFT JOIN mc_currency ON mc_account.code = mc_currency.code WHERE mc_account.username =  ?";
+    private static final String SELECT_BALANCE = "SELECT `balance` FROM `mc_account` WHERE `username` = ? AND `code` = ?";
+    private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
     private static final String SELECT_TX_LOG = "SELECT * FROM tx_log WHERE username = ? ORDER BY tx_time DESC LIMIT ?,5";
     private static final String SELECT_TX_LOG_TOTAL_COUNT = "SELECT COUNT(1) FROM tx_log WHERE username = ?";
@@ -39,7 +31,7 @@ public class BankService {
     // 查询用户特定币种的余额
     public static OperateResult queryCurrencyBalance(String username, String currencyCode) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE)) {
             BigDecimal balance;
             try {
                 selectBalance.setString(1, username);
@@ -66,7 +58,7 @@ public class BankService {
     // payer 付款人 payee 收款人 currencyCode 货币代码 amount 金额
     public static OperateResult transferTo(String payer, String payee, String currencyCode, BigDecimal amount, TxTypeEnum txType, String remark) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
             if (!AccountHelper.isUnlimitedAccount(payer)) {
                 // 非无限账户需要检查付款人有没有足够的钱
                 BigDecimal payerBalance; // 付款人余额
@@ -148,7 +140,7 @@ public class BankService {
     // 查询余额
     public static OperateResult getAccountInfo(String username) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectInfo = connection.prepareStatement(SELECT_INFO);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectInfo = connection.prepareStatement(SELECT_INFO)) {
             ArrayList<AccountBalanceEntity> detail = new ArrayList<>();
             try {
                 selectInfo.setString(1, username);
@@ -174,7 +166,7 @@ public class BankService {
     // 查询交易日志
     public static OperateResult getAccountTradeLog(String username, Integer pageNo) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG)) {
             ArrayList<TxLogEntity> detail = new ArrayList<>();
             Integer pageOffset = (pageNo - 1) * 5;
             try {
@@ -205,7 +197,7 @@ public class BankService {
     // 查询交易日志对应的页数
     public static OperateResult getAccountTradeLogTotalPage(String username) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG_TOTAL_COUNT);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG_TOTAL_COUNT)) {
             Integer totalCount;
             try {
                 selectTxLog.setString(1, username);

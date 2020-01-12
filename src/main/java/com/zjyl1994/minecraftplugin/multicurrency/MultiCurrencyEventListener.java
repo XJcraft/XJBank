@@ -5,13 +5,9 @@
  */
 package com.zjyl1994.minecraftplugin.multicurrency;
 
-import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
-import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
-import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.services.ATMService;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,14 +32,14 @@ public class MultiCurrencyEventListener implements Listener {
     public void onPlayerUse(PlayerInteractEvent event) {
         Player p = event.getPlayer();
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) { // 对方块右键
-            if (event.getClickedBlock().getState() instanceof Sign) {
+            if (event.getClickedBlock() != null && event.getClickedBlock().getState() instanceof Sign) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 // 银行相关牌子
-                if(ChatColor.stripColor(sign.getLine(0).trim()).equalsIgnoreCase("[ATM]")){
+                if (ChatColor.stripColor(sign.getLine(0).trim()).equalsIgnoreCase("[ATM]")) {
                     // 此处进入对话
                     Location signLocation = sign.getBlock().getLocation();
-                    ATMService atmInstance = new ATMService(plugin,signLocation);
-                    atmInstance.Start(p);
+                    ATMService atmInstance = new ATMService(plugin, signLocation);
+                    atmInstance.start(p);
                 }
             }
         }

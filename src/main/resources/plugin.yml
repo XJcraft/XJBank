@@ -2,7 +2,7 @@ name: MultiCurrency
 main: com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin
 version: 1.0-SNAPSHOT
 author: zjyl1994
-api-version: 1.13
+api-version: '1.13'
 commands:
     bank:
         description: Contains all commands in [MultiCurrency].

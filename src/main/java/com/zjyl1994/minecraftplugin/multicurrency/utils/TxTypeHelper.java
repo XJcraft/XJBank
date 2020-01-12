@@ -7,11 +7,12 @@ package com.zjyl1994.minecraftplugin.multicurrency.utils;
 
 /**
  * 交易类型工具
+ *
  * @author zjyl1994
  */
 public class TxTypeHelper {
-    public static TxTypeEnum negate(TxTypeEnum tte){
-        switch(tte){
+    public static TxTypeEnum negate(TxTypeEnum tte) {
+        switch (tte) {
             case CURRENCY_RESERVE_INCREASE:
                 return TxTypeEnum.CURRENCY_RESERVE_DECREASE;
             case CURRENCY_RESERVE_DECREASE:
@@ -32,8 +33,8 @@ public class TxTypeHelper {
                 return TxTypeEnum.CHECK_TRANSFER_IN;
             case CHECK_TRANSFER_IN:
                 return TxTypeEnum.CHECK_TRANSFER_OUT;
-        default:
-            return TxTypeEnum.NULL_OPERATE;
+            default:
+                return TxTypeEnum.NULL_OPERATE;
         }
     }
 }

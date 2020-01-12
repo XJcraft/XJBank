@@ -8,7 +8,6 @@ package com.zjyl1994.minecraftplugin.multicurrency.utils;
 import java.math.BigDecimal;
 
 /**
- *
  * @author zjyl1994
  */
 public class CurrencyInfoEntity {
@@ -57,5 +56,5 @@ public class CurrencyInfoEntity {
     public void setBalanceSum(BigDecimal balanceSum) {
         this.balanceSum = balanceSum;
     }
-    
+
 }

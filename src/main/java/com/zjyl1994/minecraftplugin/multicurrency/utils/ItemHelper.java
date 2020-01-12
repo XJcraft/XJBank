@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 /**
- *
  * @author zjyl1994
  */
 public class ItemHelper {
@@ -26,13 +25,15 @@ public class ItemHelper {
             p.getWorld().dropItemNaturally(p.getLocation(), is);
         }
     }
+
     // 检查用户背包里的东西够不够
-    public static boolean checkPlayerItemStack(Player p, ItemStack is){
+    public static boolean checkPlayerItemStack(Player p, ItemStack is) {
         PlayerInventory inv = p.getInventory();
         return inv.contains(is.getType(), is.getAmount());
     }
+
     // 从用户手里扣走一定数量的东西
-    public static void removePlayerItemStack(Player p, ItemStack is){
+    public static void removePlayerItemStack(Player p, ItemStack is) {
         PlayerInventory inv = p.getInventory();
         inv.removeItem(is);
     }

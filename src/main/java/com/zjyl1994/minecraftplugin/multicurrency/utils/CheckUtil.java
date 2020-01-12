@@ -6,6 +6,12 @@
 package com.zjyl1994.minecraftplugin.multicurrency.utils;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
+import org.apache.commons.codec.binary.Hex;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.MessageDigest;
@@ -16,18 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
-import org.apache.commons.codec.binary.Hex;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 
 /**
- *
  * @author zjyl1994
  */
 public class CheckUtil {
-    
+
     // 获得支票价值
     public static Optional<CurrencyEntity> getValue(ItemStack itemStack) {
         if (itemStack == null) {
@@ -56,7 +56,7 @@ public class CheckUtil {
         }
         // 机读页内容(第二页)
         var content = meta.getPage(2);
-        
+
         // 检查机读区并读取数据
         String[] mrpLines = content.replaceAll("§0", "").split("\n");
         if (mrpLines.length != 6) {
@@ -64,10 +64,10 @@ public class CheckUtil {
         }
         for (String mrpLine : mrpLines) {
             if (!mrpLine.startsWith(">>")) {
-               return Optional.empty();
+                return Optional.empty();
             }
         }
-        
+
         String checkId = mrpLines[0].substring(2).trim();
         String currencyCode = mrpLines[1].substring(2).trim();
         BigDecimal amount = new BigDecimal(mrpLines[2].substring(2).trim());
@@ -105,9 +105,9 @@ public class CheckUtil {
         viewableBuilder.append("\n签发:");
         viewableBuilder.append(issuer);
         viewableBuilder.append("\n日期:");
-        viewableBuilder.append(dateTimeStr.substring(0, 10));
+        viewableBuilder.append(dateTimeStr, 0, 10);
         viewableBuilder.append("\n时间:");
-        viewableBuilder.append(dateTimeStr.substring(11, 19));
+        viewableBuilder.append(dateTimeStr, 11, 19);
         viewableBuilder.append("\n\n§8§nXJCraft金融管理局监制\n§7§k");
         viewableBuilder.append(checkHash);
         content.add(viewableBuilder.toString());
@@ -141,14 +141,12 @@ public class CheckUtil {
     // 生成支票签名哈希
     // id 支票编号，currencyCode 支票币种，amount 金额，issuer 签发人，dateTime 签法时间
     private static String generateCheckHash(String id, String currencyCode, BigDecimal amount, String issuer, String dateTime) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(id);
-        sb.append(currencyCode);
-        sb.append(amount.toString());
-        sb.append(issuer);
-        sb.append(dateTime);
-        sb.append(MultiCurrencyPlugin.getInstance().getConfig().getString("secert"));
-        String signContent = sb.toString();
+        String signContent = id +
+                currencyCode +
+                amount.toString() +
+                issuer +
+                dateTime +
+                MultiCurrencyPlugin.getInstance().getConfig().getString("secert");
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(signContent.getBytes());

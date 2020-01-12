@@ -10,6 +10,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyInfoEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -19,25 +20,24 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 /**
- *
  * @author zjyl1994
  */
 public class CurrencyService {
 
-    private static final String SELECT_CURRENCY = "SELECT * FROM currency WHERE `code` = ?";
-    private static final String INSERT_CURRNECY = "INSERT INTO currency (`code`,`owner`,`name`) VALUES(?,?,?)";
-    private static final String UPDATE_CURRENCY_NAME = "UPDATE currency SET `name` = ? WHERE `code` = ?";
-    private static final String UPDATE_BALANCE = "INSERT INTO `account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
-    private static final String UPDATE_CURRENCY_TOTAL = "UPDATE currency SET `total` = `total` + ? WHERE `code` = ?";
-    private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
-    private static final String SELECT_CURRENCY_INFO = "SELECT * FROM (SELECT owner,name,total AS currencyTotal FROM currency WHERE CODE = ?) AS a,\n" +
-"(SELECT balance AS reserveBalance FROM account WHERE username = CONCAT(\"$\",?)) AS b,\n" +
-"(SELECT SUM(balance)AS accountBalanceSum FROM account WHERE username != CONCAT(\"$\",?) AND CODE = ?) AS c;";
+    private static final String SELECT_CURRENCY = "SELECT * FROM mc_currency WHERE `code` = ?";
+    private static final String INSERT_CURRNECY = "INSERT INTO mc_currency (`code`,`owner`,`name`) VALUES(?,?,?)";
+    private static final String UPDATE_CURRENCY_NAME = "UPDATE mc_currency SET `name` = ? WHERE `code` = ?";
+    private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
+    private static final String UPDATE_CURRENCY_TOTAL = "UPDATE mc_currency SET `total` = `total` + ? WHERE `code` = ?";
+    private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
+    private static final String SELECT_CURRENCY_INFO = "SELECT * FROM (SELECT owner,name,total AS currencyTotal FROM mc_currency WHERE CODE = ?) AS a,\n" +
+            "(SELECT balance AS reserveBalance FROM mc_account WHERE username = CONCAT(\"$\",?)) AS b,\n" +
+            "(SELECT SUM(balance)AS accountBalanceSum FROM mc_account WHERE username != CONCAT(\"$\",?) AND CODE = ?) AS c;";
 
     // 检查是否货币持有人
     public static Boolean isCurrencyOwner(String currencyCode, String playerName) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY)) {
             String owner;
             try {
                 selectCurrency.setString(1, currencyCode);
@@ -66,7 +66,7 @@ public class CurrencyService {
         }
         currencyCode = currencyCode.toUpperCase();
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement newCurrencyStmt = connection.prepareStatement(INSERT_CURRNECY);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement newCurrencyStmt = connection.prepareStatement(INSERT_CURRNECY)) {
             try {
                 newCurrencyStmt.setString(1, currencyCode);
                 newCurrencyStmt.setString(2, playerName);
@@ -92,7 +92,7 @@ public class CurrencyService {
     public static OperateResult renameCurrency(String currencyCode, String currencyName, String playerName) {
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement renameCurrencyStmt = connection.prepareStatement(UPDATE_CURRENCY_NAME);) {
+                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement renameCurrencyStmt = connection.prepareStatement(UPDATE_CURRENCY_NAME)) {
                 try {
                     renameCurrencyStmt.setString(1, currencyName);
                     renameCurrencyStmt.setString(2, currencyCode);
@@ -118,7 +118,7 @@ public class CurrencyService {
         BigDecimal roundAmount = amount.setScale(4, RoundingMode.DOWN);
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
+                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
                 try {
                     // 更新储备账户内的钱
                     updateBalance.setString(1, reserveAccount);
@@ -159,7 +159,7 @@ public class CurrencyService {
         BigDecimal roundAmount = amount.setScale(4, RoundingMode.DOWN).negate();
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
+                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
                 try {
                     // 更新储备账户内的钱
                     updateBalance.setString(1, reserveAccount);
@@ -197,7 +197,7 @@ public class CurrencyService {
     // 获取货币详细信息
     public static OperateResult getCurrencyInfo(String currencyCode) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY_INFO);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY_INFO)) {
             CurrencyInfoEntity cie = new CurrencyInfoEntity();
             try {
                 selectCurrency.setString(1, currencyCode);

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 
 /**
  * 描述某一种货币的实体
+ *
  * @author zjyl1994
  */
 public class CurrencyEntity {
@@ -20,12 +21,13 @@ public class CurrencyEntity {
         this.currencyCode = currencyCode;
         this.amount = amount;
     }
-    public CurrencyEntity(String currencyCode, BigDecimal amount,String remark) {
+
+    public CurrencyEntity(String currencyCode, BigDecimal amount, String remark) {
         this.currencyCode = currencyCode;
         this.amount = amount;
         this.remark = remark;
     }
-    
+
     public String getCurrencyCode() {
         return currencyCode;
     }
@@ -37,5 +39,5 @@ public class CurrencyEntity {
     public String getRemark() {
         return remark;
     }
-    
+
 }

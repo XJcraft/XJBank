@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- *
  * @author zjyl1994
  */
 public class TxLogEntity {
@@ -20,9 +19,10 @@ public class TxLogEntity {
     BigDecimal amount; // 交易金额
     String remark; // 交易备注
 
-    public TxLogEntity(){}
-    
-    public TxLogEntity(String txUsername, Timestamp txTime, TxTypeEnum txType, String currencyCode, BigDecimal amount,String remark) {
+    public TxLogEntity() {
+    }
+
+    public TxLogEntity(String txUsername, Timestamp txTime, TxTypeEnum txType, String currencyCode, BigDecimal amount, String remark) {
         this.txUsername = txUsername;
         this.txTime = txTime;
         this.txType = txType;
@@ -78,6 +78,6 @@ public class TxLogEntity {
     public void setRemark(String remark) {
         this.remark = remark;
     }
-    
-    
+
+
 }

@@ -7,19 +7,16 @@ package com.zjyl1994.minecraftplugin.multicurrency.command;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CheckService;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.CheckUtil;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyEntity;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.ItemHelper;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Optional;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Optional;
 
 /**
  * 支票操作指令
@@ -46,27 +43,21 @@ public class CheckCMD {
             p.sendMessage("获取一本支票需要4张纸");
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                String upperCode = currencyCode.toUpperCase();
-                BigDecimal roundAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
-                OperateResult transferResult = CheckService.makeCheck(p.getName(), upperCode, roundAmount);
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (transferResult.getSuccess()) {
-                            // 拿走4张纸
-                            ItemHelper.removePlayerItemStack(p, new ItemStack(Material.PAPER, 4));
-                            // 在玩家手里生成支票
-                            ItemStack is = CheckUtil.getCheck(new CurrencyEntity(upperCode, roundAmount), p.getName());
-                            ItemHelper.givePlayerItemStack(p, is);
-                        } else {
-                            p.sendMessage(transferResult.getReason());
-                        }
-                    }
-                });
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            String upperCode = currencyCode.toUpperCase();
+            BigDecimal roundAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+            OperateResult transferResult = CheckService.makeCheck(p.getName(), upperCode, roundAmount);
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (transferResult.getSuccess()) {
+                    // 拿走4张纸
+                    ItemHelper.removePlayerItemStack(p, new ItemStack(Material.PAPER, 4));
+                    // 在玩家手里生成支票
+                    ItemStack is = CheckUtil.getCheck(new CurrencyEntity(upperCode, roundAmount), p.getName());
+                    ItemHelper.givePlayerItemStack(p, is);
+                } else {
+                    p.sendMessage(transferResult.getReason());
+                }
+            });
         });
     }
 
@@ -78,30 +69,24 @@ public class CheckCMD {
             p.sendMessage("请手持有效支票再试");
         } else {
             CurrencyEntity ce = checkValue.get();
-            
-            Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                @Override
-                public void run() {
-                    String currencyCode = ce.getCurrencyCode().toUpperCase();
-                    BigDecimal amount = ce.getAmount().setScale(4, RoundingMode.DOWN);
-                    OperateResult transferResult = CheckService.cashCheck(p.getName(), currencyCode, amount, ce.getRemark() + "的支票");
-                    Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                        @Override
-                        public void run() {
-                            if (transferResult.getSuccess()) {
-                                // 在玩家手里抢走已经兑付的支票
-                                p.getInventory().remove(itemInMainHand);
-                                // 还给用户4张纸
-                                ItemStack paperIS = new ItemStack(Material.PAPER);
-                                paperIS.setAmount(4);
-                                ItemHelper.givePlayerItemStack(p, paperIS);
-                                p.sendMessage("支票" + currencyCode + amount.toString() + "已入账");
-                            } else {
-                                p.sendMessage(transferResult.getReason());
-                            }
-                        }
-                    });
-                }
+
+            Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+                String currencyCode = ce.getCurrencyCode().toUpperCase();
+                BigDecimal amount = ce.getAmount().setScale(4, RoundingMode.DOWN);
+                OperateResult transferResult = CheckService.cashCheck(p.getName(), currencyCode, amount, ce.getRemark() + "的支票");
+                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                    if (transferResult.getSuccess()) {
+                        // 在玩家手里抢走已经兑付的支票
+                        p.getInventory().remove(itemInMainHand);
+                        // 还给用户4张纸
+                        ItemStack paperIS = new ItemStack(Material.PAPER);
+                        paperIS.setAmount(4);
+                        ItemHelper.givePlayerItemStack(p, paperIS);
+                        p.sendMessage("支票" + currencyCode + amount.toString() + "已入账");
+                    } else {
+                        p.sendMessage(transferResult.getReason());
+                    }
+                });
             });
         }
     }
@@ -115,31 +100,25 @@ public class CheckCMD {
         BigDecimal bdTotalCurrencyAmount = bdCurrencyAmount.multiply(new BigDecimal(iCheckAmount));
         // 检查纸够不够
         if (!ItemHelper.checkPlayerItemStack(p, new ItemStack(Material.PAPER, iPaperAmount))) {
-            p.sendMessage("获取" + Integer.toString(iCheckAmount) + "本支票需要" + Integer.toString(iPaperAmount) + "张纸");
+            p.sendMessage("获取" + iCheckAmount + "本支票需要" + iPaperAmount + "张纸");
             return;
         }
         // 异步转账
-        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                OperateResult transferResult = CheckService.makeCheck(p.getName(), upperCode, bdTotalCurrencyAmount);
-                Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (transferResult.getSuccess()) {
-                            // 拿走对应的纸
-                            ItemHelper.removePlayerItemStack(p, new ItemStack(Material.PAPER, iPaperAmount));
-                            // 塞给玩家
-                            for (int i = 0; i < iCheckAmount; i++) {
-                                ItemStack is = CheckUtil.getCheck(new CurrencyEntity(upperCode, bdCurrencyAmount), p.getName());
-                                ItemHelper.givePlayerItemStack(p, is);
-                            }
-                        } else {
-                            p.sendMessage(transferResult.getReason());
-                        }
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            OperateResult transferResult = CheckService.makeCheck(p.getName(), upperCode, bdTotalCurrencyAmount);
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (transferResult.getSuccess()) {
+                    // 拿走对应的纸
+                    ItemHelper.removePlayerItemStack(p, new ItemStack(Material.PAPER, iPaperAmount));
+                    // 塞给玩家
+                    for (int i = 0; i < iCheckAmount; i++) {
+                        ItemStack is = CheckUtil.getCheck(new CurrencyEntity(upperCode, bdCurrencyAmount), p.getName());
+                        ItemHelper.givePlayerItemStack(p, is);
                     }
-                });
-            }
+                } else {
+                    p.sendMessage(transferResult.getReason());
+                }
+            });
         });
     }
 
@@ -151,28 +130,22 @@ public class CheckCMD {
             ItemStack checkItem = inventory.getItem(i);
             Optional<CurrencyEntity> checkValue = CheckUtil.getValue(checkItem);
             if (checkValue.isPresent()) { // 有效支票触发异步转账
-                Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
-                        CurrencyEntity ce = checkValue.get();
-                        OperateResult transferResult = CheckService.cashCheck(p.getName(), ce.getCurrencyCode(), ce.getAmount(),  ce.getRemark()+"的支票");
-                        Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
-                            @Override
-                            public void run() {
-                                if (transferResult.getSuccess()) {
-                                    // 在玩家手里抢走已经兑付的支票
-                                    p.getInventory().remove(checkItem);
-                                    // 还给用户4张纸
-                                    ItemStack paperIS = new ItemStack(Material.PAPER);
-                                    paperIS.setAmount(4);
-                                    p.getInventory().addItem(paperIS);
-                                    p.sendMessage("支票" + ce.getCurrencyCode() + ce.getAmount().toString() + "已入账");
-                                } else {
-                                    p.sendMessage(transferResult.getReason());
-                                }
-                            }
-                        });
-                    }
+                Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+                    CurrencyEntity ce = checkValue.get();
+                    OperateResult transferResult = CheckService.cashCheck(p.getName(), ce.getCurrencyCode(), ce.getAmount(), ce.getRemark() + "的支票");
+                    Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                        if (transferResult.getSuccess()) {
+                            // 在玩家手里抢走已经兑付的支票
+                            p.getInventory().remove(checkItem);
+                            // 还给用户4张纸
+                            ItemStack paperIS = new ItemStack(Material.PAPER);
+                            paperIS.setAmount(4);
+                            p.getInventory().addItem(paperIS);
+                            p.sendMessage("支票" + ce.getCurrencyCode() + ce.getAmount().toString() + "已入账");
+                        } else {
+                            p.sendMessage(transferResult.getReason());
+                        }
+                    });
                 });
             }
         }

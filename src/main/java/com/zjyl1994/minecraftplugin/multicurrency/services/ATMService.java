@@ -9,22 +9,13 @@ import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OutOfRangeCanceller;
-import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.conversations.Conversable;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ConversationAbandonedListener;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.MessagePrompt;
-import org.bukkit.conversations.NullConversationPrefix;
-import org.bukkit.conversations.NumericPrompt;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.StringPrompt;
+import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
 
 /**
  * ATM 机
@@ -62,7 +53,7 @@ public class ATMService implements ConversationAbandonedListener {
         }
     }
 
-    public void Start(Player p) {
+    public void start(Player p) {
         this.player = p;
         ConversationFactory factory;
         // 检查是否直达功能
@@ -77,7 +68,7 @@ public class ATMService implements ConversationAbandonedListener {
                         .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
                         .withTimeout(10)
                         .withEscapeSequence("exit").addConversationAbandonedListener(this);
-                factory.buildConversation((Conversable) p).begin();
+                factory.buildConversation(p).begin();
                 break;
             case "开出支票":
                 String signCurrencyCode = ChatColor.stripColor(sign.getLine(2).trim());
@@ -89,7 +80,7 @@ public class ATMService implements ConversationAbandonedListener {
                             .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
                             .withTimeout(10)
                             .withEscapeSequence("exit").addConversationAbandonedListener(this);
-                    factory.buildConversation((Conversable) p).begin();
+                    factory.buildConversation(p).begin();
                 } else {
                     feature = "check";
                     featureState = "checkAmount";
@@ -99,7 +90,7 @@ public class ATMService implements ConversationAbandonedListener {
                             .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
                             .withTimeout(10)
                             .withEscapeSequence("exit").addConversationAbandonedListener(this);
-                    factory.buildConversation((Conversable) p).begin();
+                    factory.buildConversation(p).begin();
                 }
                 break;
             case "兑现支票":
@@ -121,7 +112,7 @@ public class ATMService implements ConversationAbandonedListener {
                         .withConversationCanceller(new OutOfRangeCanceller(this.plugin, signLocation, 5))
                         .withTimeout(10)
                         .withEscapeSequence("exit").addConversationAbandonedListener(this);
-                factory.buildConversation((Conversable) p).begin();
+                factory.buildConversation(p).begin();
         }
     }
 
@@ -285,10 +276,6 @@ public class ATMService implements ConversationAbandonedListener {
         protected Prompt acceptValidatedInput(ConversationContext context, Number input) {
             switch (featureState) {
                 case "payAmount":
-                    argument.add(Double.toString(input.doubleValue()));
-                    featureState = "none";
-                    operateDone = true;
-                    return Prompt.END_OF_CONVERSATION;
                 case "checkAmount":
                     argument.add(Double.toString(input.doubleValue()));
                     featureState = "none";

@@ -17,7 +17,8 @@ CREATE DATABASE IF NOT EXISTS `multicurrency` /*!40100 DEFAULT CHARACTER SET utf
 USE `multicurrency`;
 
 -- Dumping structure for table multicurrency.account
-CREATE TABLE IF NOT EXISTS `account` (
+CREATE TABLE IF NOT EXISTS `mc_account`
+(
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL COMMENT '存款人',
   `code` char(3) NOT NULL COMMENT '货币代码',
@@ -29,7 +30,8 @@ CREATE TABLE IF NOT EXISTS `account` (
 -- Data exporting was unselected.
 
 -- Dumping structure for table multicurrency.currency
-CREATE TABLE IF NOT EXISTS `currency` (
+CREATE TABLE IF NOT EXISTS `mc_currency`
+(
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `code` char(3) NOT NULL COMMENT '货币代码',
   `owner` varchar(50) NOT NULL COMMENT '货币发行人',
@@ -42,7 +44,8 @@ CREATE TABLE IF NOT EXISTS `currency` (
 -- Data exporting was unselected.
 
 -- Dumping structure for table multicurrency.exchange_rate
-CREATE TABLE IF NOT EXISTS `exchange_rate` (
+CREATE TABLE IF NOT EXISTS `mc_exchange_rate`
+(
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from` char(3) NOT NULL COMMENT '兑出币种',
   `to` char(3) NOT NULL COMMENT '兑入币种',
@@ -54,7 +57,8 @@ CREATE TABLE IF NOT EXISTS `exchange_rate` (
 -- Data exporting was unselected.
 
 -- Dumping structure for table multicurrency.tx_log
-CREATE TABLE IF NOT EXISTS `tx_log` (
+CREATE TABLE IF NOT EXISTS `mc_tx_log`
+(
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL COMMENT '交易人',
   `tx_username` varchar(50) NOT NULL COMMENT '交易对方',

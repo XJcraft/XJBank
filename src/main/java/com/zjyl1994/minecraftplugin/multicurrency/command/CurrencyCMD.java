@@ -12,12 +12,13 @@ import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountBalanceEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyInfoEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 
 /**
  * 货币操作指令
@@ -158,7 +159,7 @@ public class CurrencyCMD {
         });
     }
 
-    public void currencyReservePayCommand(Player p, String username,String currencyCode, String payCurrencyCode, String amount) {
+    public void currencyReservePayCommand(Player p, String username, String currencyCode, String payCurrencyCode, String amount) {
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             String upperCurrencyCode = currencyCode.toUpperCase(); // 准备金币种
             String upperPayCurrencyCode = payCurrencyCode.toUpperCase(); // 待支付的币种

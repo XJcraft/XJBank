@@ -6,12 +6,8 @@
 package com.zjyl1994.minecraftplugin.multicurrency.services;
 
 import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
-import static com.zjyl1994.minecraftplugin.multicurrency.services.CurrencyService.isCurrencyOwner;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
-import static com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum.CURRENCY_EXCHANGE_IN;
-import static com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum.CURRENCY_EXCHANGE_OUT;
-import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeHelper;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -19,6 +15,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
+
+import static com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum.CURRENCY_EXCHANGE_IN;
+import static com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum.CURRENCY_EXCHANGE_OUT;
 
 /**
  * 货币兑换逻辑
@@ -28,16 +27,16 @@ import java.util.logging.Level;
 public class ExchangeService {
 
     // 汇率为1单位外币可兑本币数量，FROM为外币，TO为本币
-    private static final String GET_EXCHANGE_RATE = "SELECT amount FROM `exchange_rate` WHERE `from` = ? AND `to` = ?";
-    private static final String SET_EXCHANGE_RATE = "INSERT INTO `exchange_rate` (`from`,`to`,`amount`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `amount` = ?";
-    private static final String SELECT_BALANCE = "SELECT `balance` FROM `account` WHERE `username` = ? AND `code` = ?";
-    private static final String UPDATE_BALANCE = "INSERT INTO `account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
-    private static final String INSERT_TX_LOG = "INSERT INTO tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
+    private static final String GET_EXCHANGE_RATE = "SELECT amount FROM `mc_exchange_rate` WHERE `from` = ? AND `to` = ?";
+    private static final String SET_EXCHANGE_RATE = "INSERT INTO `mc_exchange_rate` (`from`,`to`,`amount`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `amount` = ?";
+    private static final String SELECT_BALANCE = "SELECT `balance` FROM `mc_account` WHERE `username` = ? AND `code` = ?";
+    private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
+    private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
 // 获得货币汇率
 
     public static OperateResult getExchangeRate(String currencyCodeFrom, String currencyCodeTo) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectExchangeRate = connection.prepareStatement(GET_EXCHANGE_RATE);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectExchangeRate = connection.prepareStatement(GET_EXCHANGE_RATE)) {
             BigDecimal exchangeRate;
             try {
                 selectExchangeRate.setString(1, currencyCodeFrom);
@@ -63,7 +62,7 @@ public class ExchangeService {
     // 设置货币汇率
     public static OperateResult setExchangeRate(String currencyCodeFrom, String currencyCodeTo, BigDecimal rate) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement setExchangeRate = connection.prepareStatement(SET_EXCHANGE_RATE);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement setExchangeRate = connection.prepareStatement(SET_EXCHANGE_RATE)) {
             try {
                 setExchangeRate.setString(1, currencyCodeFrom);
                 setExchangeRate.setString(2, currencyCodeTo);
@@ -85,7 +84,7 @@ public class ExchangeService {
     // 兑换，from为外币，to为本币，amount为本币数量 兑换amount本币需要(1/exchangeRate)*amount外币
     public static OperateResult exchange(String username, String currencyCodeFrom, String currencyCodeTo, BigDecimal amount) {
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);  PreparedStatement selectExchangeRate = connection.prepareStatement(GET_EXCHANGE_RATE);  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG);) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE); PreparedStatement selectExchangeRate = connection.prepareStatement(GET_EXCHANGE_RATE); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
             // 查询汇率
             BigDecimal exchangeRate;
             try {
@@ -106,7 +105,7 @@ public class ExchangeService {
                 // 没有汇率，不可兑换
                 return new OperateResult(false, "兑换失败," + currencyCodeTo + "发行人没有指定" + currencyCodeFrom + "->" + currencyCodeTo + "的汇率");
             }
-            BigDecimal exchangeRequire = BigDecimal.ONE.divide(exchangeRate,6,RoundingMode.HALF_EVEN).multiply(amount);// 所需的外币数量
+            BigDecimal exchangeRequire = BigDecimal.ONE.divide(exchangeRate, 6, RoundingMode.HALF_EVEN).multiply(amount);// 所需的外币数量
             // 检查玩家外币数量够不够
             BigDecimal playerBalance;
             try {
@@ -156,7 +155,7 @@ public class ExchangeService {
             }
             // 准备金转入外币款
             try {
-                updateBalance.setString(1, "$"+currencyCodeTo);
+                updateBalance.setString(1, "$" + currencyCodeTo);
                 updateBalance.setString(2, currencyCodeFrom);
                 updateBalance.setBigDecimal(3, exchangeRequire);
                 updateBalance.setBigDecimal(4, exchangeRequire);
@@ -167,7 +166,7 @@ public class ExchangeService {
             }
             // 准备金扣本币款
             try {
-                updateBalance.setString(1, "$"+currencyCodeTo);
+                updateBalance.setString(1, "$" + currencyCodeTo);
                 updateBalance.setString(2, currencyCodeTo);
                 updateBalance.setBigDecimal(3, amount.negate());
                 updateBalance.setBigDecimal(4, amount.negate());
@@ -193,11 +192,11 @@ public class ExchangeService {
             remarkBuilder.append(exchangeRequire.setScale(4, RoundingMode.DOWN));
             remarkBuilder.append("->");
             remarkBuilder.append(currencyCodeTo);
-            remarkBuilder.append(amount.setScale(4,RoundingMode.DOWN));
+            remarkBuilder.append(amount.setScale(4, RoundingMode.DOWN));
             String remark = remarkBuilder.toString();
             try {
                 insertLog.setString(1, username);
-                insertLog.setString(2, "$"+currencyCodeTo);
+                insertLog.setString(2, "$" + currencyCodeTo);
                 insertLog.setInt(3, CURRENCY_EXCHANGE_OUT.ordinal());
                 insertLog.setString(4, currencyCodeFrom);
                 insertLog.setBigDecimal(5, exchangeRequire.negate());
@@ -209,7 +208,7 @@ public class ExchangeService {
             }
             try {
                 insertLog.setString(1, username);
-                insertLog.setString(2, "$"+currencyCodeTo);
+                insertLog.setString(2, "$" + currencyCodeTo);
                 insertLog.setInt(3, CURRENCY_EXCHANGE_IN.ordinal());
                 insertLog.setString(4, currencyCodeTo);
                 insertLog.setBigDecimal(5, amount);

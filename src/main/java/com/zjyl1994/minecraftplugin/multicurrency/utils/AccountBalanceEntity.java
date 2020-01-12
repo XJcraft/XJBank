@@ -8,7 +8,6 @@ package com.zjyl1994.minecraftplugin.multicurrency.utils;
 import java.math.BigDecimal;
 
 /**
- *
  * @author zjyl1994
  */
 public class AccountBalanceEntity {
@@ -33,5 +32,5 @@ public class AccountBalanceEntity {
     public BigDecimal getBalance() {
         return balance;
     }
-    
+
 }

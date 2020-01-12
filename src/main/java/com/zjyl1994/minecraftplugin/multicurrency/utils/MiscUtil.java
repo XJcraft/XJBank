@@ -9,11 +9,10 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 /**
- *
  * @author zjyl1994
  */
 public class MiscUtil {
-    public static String getPlayerLocationString(Player p){
+    public static String getPlayerLocationString(Player p) {
         Location l = p.getLocation();
         StringBuilder sb = new StringBuilder();
         sb.append("[(");
@@ -27,14 +26,12 @@ public class MiscUtil {
         sb.append("]");
         return sb.toString();
     }
-    
-    public static Integer getIntegerFromString(String s){
+
+    public static Integer getIntegerFromString(String s) {
         try {
-           return Integer.parseInt(s);
-        }
-        catch (NumberFormatException e)
-        {
-           return 0;
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return 0;
         }
     }
 }
