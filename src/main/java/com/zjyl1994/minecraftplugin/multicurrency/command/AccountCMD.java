@@ -42,14 +42,32 @@ public class AccountCMD {
 
     // 转账
     public void transferToAccount(Player p, String payTo, String currencyCode, String amount) {
+        BigDecimal roundAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+        if (roundAmount.compareTo(BigDecimal.ZERO) <= 0) { //操作数必须大于0
+            p.sendMessage("金额必须大于0");
+            return;
+        }
+        Boolean payToAccountIsVirtual = payTo.startsWith("$");
+        if (!payToAccountIsVirtual) {
+            Player payToPlayer = Bukkit.getServer().getPlayerExact(payTo);
+            if (payToPlayer == null) {
+                p.sendMessage("收款玩家" + payTo + "不在线");
+                return;
+            }
+        }
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
-            BigDecimal roundAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
             OperateResult transferResult = BankService.transferTo(p.getName(), payTo, currencyCode.toUpperCase(), roundAmount, TxTypeEnum.ELECTRONIC_TRANSFER_OUT, "");
             Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
                 @Override
                 public void run() {
                     if (transferResult.getSuccess()) {
                         p.sendMessage("成功向" + payTo + "转账" + currencyCode.toUpperCase() + roundAmount.toString());
+                        if (!payToAccountIsVirtual) {
+                            Player payToPlayer = Bukkit.getServer().getPlayerExact(payTo);
+                            if (payToPlayer != null) {
+                                payToPlayer.sendMessage("收到来自" + p.getName() + "的转账" + currencyCode.toUpperCase() + roundAmount.toString());
+                            }
+                        }
                     } else {
                         p.sendMessage(transferResult.getReason());
                     }
@@ -60,9 +78,13 @@ public class AccountCMD {
 
     // 从储备金账户转出
     public void reserveTransferOut(Player p, String currencyCode, String amount) {
+        BigDecimal roundAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+        if (roundAmount.compareTo(BigDecimal.ZERO) <= 0) { //操作数必须大于0
+            p.sendMessage("金额必须大于0");
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             String upperCurrencyCode = currencyCode.toUpperCase();
-            BigDecimal roundAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
             OperateResult transferResult;
             if (CurrencyService.isCurrencyOwner(upperCurrencyCode, p.getName())) {
                 transferResult = BankService.transferTo("$" + upperCurrencyCode, p.getName(), upperCurrencyCode, roundAmount, TxTypeEnum.ELECTRONIC_TRANSFER_OUT, "");
@@ -117,8 +139,8 @@ public class AccountCMD {
             OperateResult accountLogPageNo = BankService.getAccountTradeLogTotalPage(p.getName());
             if (accountLogPageNo.getSuccess()) {
                 int totalPage = (int) accountLogPageNo.getData();
-                if (pageNo > totalPage) {
-                    Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> p.sendMessage("最多只有" + totalPage + "页"));
+                if (pageNo > totalPage || pageNo <= 0) {
+                    Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> p.sendMessage("页码范围 0~" + totalPage + " 页"));
                 } else {
                     OperateResult accountLog = BankService.getAccountTradeLog(p.getName(), pageNo);
                     Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {

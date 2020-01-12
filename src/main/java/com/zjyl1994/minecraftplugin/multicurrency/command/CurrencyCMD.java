@@ -160,10 +160,22 @@ public class CurrencyCMD {
     }
 
     public void currencyReservePayCommand(Player p, String username, String currencyCode, String payCurrencyCode, String amount) {
+        BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+        if (bdAmount.compareTo(BigDecimal.ZERO) <= 0) { //操作数必须大于0
+            p.sendMessage("金额必须大于0");
+            return;
+        }
+        Boolean payToAccountIsVirtual = username.startsWith("$");
+        if (!payToAccountIsVirtual) {
+            Player payToPlayer = Bukkit.getServer().getPlayerExact(username);
+            if (payToPlayer == null) {
+                p.sendMessage("收款玩家" + username + "不在线");
+                return;
+            }
+        }
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             String upperCurrencyCode = currencyCode.toUpperCase(); // 准备金币种
             String upperPayCurrencyCode = payCurrencyCode.toUpperCase(); // 待支付的币种
-            BigDecimal bdAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
             OperateResult accountInfo;
             if (CurrencyService.isCurrencyOwner(upperCurrencyCode, p.getName())) {
                 accountInfo = BankService.transferTo("$" + upperCurrencyCode, username, upperPayCurrencyCode, bdAmount, TxTypeEnum.ELECTRONIC_TRANSFER_OUT, "准备金支付");
@@ -173,6 +185,12 @@ public class CurrencyCMD {
             Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                 if (accountInfo.getSuccess()) {
                     p.sendMessage("成功从" + upperCurrencyCode + "准备金账户向" + username + "转账" + upperPayCurrencyCode + bdAmount.toString());
+                    if (!payToAccountIsVirtual) {
+                        Player payToPlayer = Bukkit.getServer().getPlayerExact(username);
+                        if (payToPlayer != null) {
+                            payToPlayer.sendMessage("收到来自" + upperCurrencyCode + "准备金账户的转账" + upperPayCurrencyCode + bdAmount.toString());
+                        }
+                    }
                 } else {
                     p.sendMessage(accountInfo.getReason());
                 }
