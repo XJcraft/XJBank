@@ -6,9 +6,9 @@
 
 package com.zjyl1994.minecraftplugin.multicurrency;
 
-import com.zaxxer.hikari.HikariDataSource;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.xjcraft.CommonPlugin;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,9 +17,9 @@ import java.util.Random;
 /**
  * @author zjyl1994
  */
-public class MultiCurrencyPlugin extends JavaPlugin {
+public class MultiCurrencyPlugin extends CommonPlugin {
     private static MultiCurrencyPlugin instance;
-    private HikariDataSource hikari;
+    private DataSource hikari;
     private Random random;
 
     @Override
@@ -30,18 +30,18 @@ public class MultiCurrencyPlugin extends JavaPlugin {
         this.random = new Random(System.currentTimeMillis());
         this.saveDefaultConfig();
 
-        hikari = new HikariDataSource();
-        hikari.setDataSourceClassName(this.getConfig().getString("datasource.driver"));
-        hikari.addDataSourceProperty("serverName", this.getConfig().getString("datasource.server"));
-        hikari.addDataSourceProperty("port", this.getConfig().getInt("datasource.port"));
-        hikari.addDataSourceProperty("databaseName", this.getConfig().getString("datasource.database"));
-        hikari.addDataSourceProperty("user", this.getConfig().getString("datasource.username"));
-        hikari.addDataSourceProperty("password", this.getConfig().getString("datasource.password"));
-        hikari.setMaxLifetime(this.getConfig().getInt("datasource.hikari.maxLifetime"));
-        hikari.setMaximumPoolSize(this.getConfig().getInt("datasource.hikari.maximumPoolSize"));
-        hikari.setAutoCommit(false);
-        hikari.addDataSourceProperty("useUnicode", "true");
-        hikari.addDataSourceProperty("characterEncoding", "utf8");
+        hikari = getDataSource("MultiCurrency");
+//        hikari.setDataSourceClassName(this.getConfig().getString("datasource.driver"));
+//        hikari.addDataSourceProperty("serverName", this.getConfig().getString("datasource.server"));
+//        hikari.addDataSourceProperty("port", this.getConfig().getInt("datasource.port"));
+//        hikari.addDataSourceProperty("databaseName", this.getConfig().getString("datasource.database"));
+//        hikari.addDataSourceProperty("user", this.getConfig().getString("datasource.username"));
+//        hikari.addDataSourceProperty("password", this.getConfig().getString("datasource.password"));
+//        hikari.setMaxLifetime(this.getConfig().getInt("datasource.hikari.maxLifetime"));
+//        hikari.setMaximumPoolSize(this.getConfig().getInt("datasource.hikari.maximumPoolSize"));
+//        hikari.setAutoCommit(false);
+//        hikari.addDataSourceProperty("useUnicode", "true");
+//        hikari.addDataSourceProperty("characterEncoding", "utf8");
         try (Connection connection = hikari.getConnection()) {
             String[] create = {"CREATE TABLE IF NOT EXISTS `mc_account` (`id` INT (11) NOT NULL AUTO_INCREMENT,`username` VARCHAR (50) NOT NULL COMMENT '存款人',`code` CHAR (3) NOT NULL COMMENT '货币代码',`balance` DECIMAL (16,6) NOT NULL DEFAULT 0.000000 COMMENT '账户余额',PRIMARY KEY (`id`),UNIQUE KEY `username_code` (`username`,`code`)) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='存款账户表';",
                     "CREATE TABLE IF NOT EXISTS `mc_currency` (`id` INT (11) NOT NULL AUTO_INCREMENT,`code` CHAR (3) NOT NULL COMMENT '货币代码',`owner` VARCHAR (50) NOT NULL COMMENT '货币发行人',`name` VARCHAR (50) NOT NULL COMMENT '货币常用名',`total` DECIMAL (16,6) NOT NULL DEFAULT 0.000000 COMMENT '货币发行总量',PRIMARY KEY (`id`),UNIQUE KEY `code` (`code`)) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='货币表';",
@@ -60,15 +60,14 @@ public class MultiCurrencyPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (hikari != null)
-            hikari.close();
+
     }
 
     public static MultiCurrencyPlugin getInstance() {
         return instance;
     }
 
-    public HikariDataSource getHikari() {
+    public DataSource getHikari() {
         return hikari;
     }
 
