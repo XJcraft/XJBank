@@ -30,9 +30,9 @@ public class CurrencyService {
     private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String UPDATE_CURRENCY_TOTAL = "UPDATE mc_currency SET `total` = `total` + ? WHERE `code` = ?";
     private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
-    private static final String SELECT_CURRENCY_INFO = "SELECT * FROM (SELECT owner,name,total AS currencyTotal FROM mc_currency WHERE CODE = ?) AS a,\n" +
-            "(SELECT balance AS reserveBalance FROM mc_account WHERE username = CONCAT(\"$\",?)) AS b,\n" +
-            "(SELECT SUM(balance)AS accountBalanceSum FROM mc_account WHERE username != CONCAT(\"$\",?) AND CODE = ?) AS c;";
+    private static final String SELECT_CURRENCY_INFO = "SELECT `code` `owner`,`name`,total as currencyTotal,(\n" +
+            "SELECT balance FROM mc_account WHERE mc_account.username=CONCAT('$',?)) AS reserveBalance,(\n" +
+            "SELECT SUM(balance) FROM mc_account WHERE mc_account.username !=CONCAT('$',?) AND mc_account.`CODE`=?) AS accountBalanceSum FROM `mc_currency` WHERE `code`=?;";
 
     // 检查是否货币持有人
     public static Boolean isCurrencyOwner(String currencyCode, String playerName) {
@@ -211,13 +211,15 @@ public class CurrencyService {
                     cie.setTotal(result.getBigDecimal("currencyTotal"));
                     cie.setReserve(result.getBigDecimal("reserveBalance"));
                     cie.setBalanceSum(result.getBigDecimal("accountBalanceSum"));
+                    return new OperateResult(true, "OK", cie);
                 }
                 connection.commit();
+                return new OperateResult(false, "currency not found");
             } catch (SQLException e) {
                 connection.rollback();
                 throw e;
             }
-            return new OperateResult(true, "OK", cie);
+
         } catch (SQLException e) {
             MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getCurrencyInfo SQLException]{0}", e.getMessage());
             return new OperateResult(false, "获取货币信息失败-数据库异常");
