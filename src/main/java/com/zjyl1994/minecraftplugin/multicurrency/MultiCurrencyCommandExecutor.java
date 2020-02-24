@@ -91,22 +91,22 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         //Bukkit.getLogger().info(Arrays.deepToString(args));
         if (args.length == 1) {
-            return Arrays.asList("currency", "pay", "check", "cash", "info", "bluk", "log", "exchange");
+            return Arrays.asList("currency", "pay", "check", "cash", "info", "bluk", "log", "exchange").stream().filter(s -> s.startsWith(args[0])).collect(Collectors.toList());
         }
         if (args.length == 2) {
             switch (args[0]) {
                 case "currency":
-                    return Arrays.asList("new", "incr", "decr", "rename", "get", "balance", "pay");
+                    return Arrays.asList("new", "incr", "decr", "rename", "get", "balance", "pay").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
                 case "pay":
                     return Arrays.asList("[对方玩家名] [货币代码] [货币数量]");
                 case "check":
                     return Arrays.asList("[货币代码] [货币数量]");
                 case "bluk":
-                    return Arrays.asList("check", "cash");
+                    return Arrays.asList("check", "cash").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
                 case "info":
                     return Arrays.asList("[货币代码]");
                 case "exchange":
-                    return Arrays.asList("get", "set", "fx");
+                    return Arrays.asList("get", "set", "fx").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
             }
         }
         if (args.length == 3) {
