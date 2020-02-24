@@ -26,6 +26,7 @@ public class MultiCurrencyPlugin extends CommonPlugin {
     public void onEnable() {
         instance = this;
         getCommand("bank").setExecutor(new MultiCurrencyCommandExecutor(this));
+        getCommand("bank").setTabCompleter(new MultiCurrencyCommandExecutor(this));
         getServer().getPluginManager().registerEvents(new MultiCurrencyEventListener(this), this);
         this.random = new Random(System.currentTimeMillis());
         this.saveDefaultConfig();

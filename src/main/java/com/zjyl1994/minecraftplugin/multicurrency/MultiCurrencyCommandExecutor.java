@@ -10,22 +10,28 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.ExchangeCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
  * @author zjyl1994
  */
-public class MultiCurrencyCommandExecutor implements CommandExecutor {
+public class MultiCurrencyCommandExecutor implements TabExecutor {
 
     private final MultiCurrencyPlugin plugin;
     private final CurrencyCMD currencyInstance;
     private final CheckCMD checkInstance;
     private final AccountCMD accountInstance;
     private final ExchangeCMD exchangeInstance;
+    private final List<String> tabComplateData;
 
     public MultiCurrencyCommandExecutor(MultiCurrencyPlugin plugin) {
         this.plugin = plugin;
@@ -33,6 +39,7 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         this.checkInstance = CheckCMD.getInstance();
         this.accountInstance = AccountCMD.getInstance();
         this.exchangeInstance = ExchangeCMD.getInstance();
+        this.tabComplateData = this.plugin.getConfig().getStringList("tabdata");
     }
 
     @Override
@@ -78,6 +85,66 @@ public class MultiCurrencyCommandExecutor implements CommandExecutor {
         }
 
         return true; // 这里返回 false 时会输出 plugin.yml 中的 usage
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        //Bukkit.getLogger().info(Arrays.deepToString(args));
+        if (args.length == 1) {
+            return Arrays.asList("currency", "pay", "check", "cash", "info", "bluk", "log", "exchange");
+        }
+        if (args.length == 2) {
+            switch (args[0]) {
+                case "currency":
+                    return Arrays.asList("new", "incr", "decr", "rename", "get", "balance", "pay");
+                case "pay":
+                    return Arrays.asList("[对方玩家名] [货币代码] [货币数量]");
+                case "check":
+                    return Arrays.asList("[货币代码] [货币数量]");
+                case "bluk":
+                    return Arrays.asList("check", "cash");
+                case "info":
+                    return Arrays.asList("[货币代码]");
+                case "exchange":
+                    return Arrays.asList("get", "set", "fx");
+            }
+        }
+        if (args.length == 3) {
+            switch (args[0]) {
+                case "currency":
+                    switch (args[1]) {
+                        case "new":
+                            return Arrays.asList("[货币代码] [货币名称]");
+                        case "incr":
+                            return Arrays.asList("[货币代码] [增发货币数量]");
+                        case "decr":
+                            return Arrays.asList("[货币代码] [减少货币数量]");
+                        case "rename":
+                            return Arrays.asList("[货币代码] [新货币名称]");
+                        case "get":
+                            return Arrays.asList("[货币代码] [货币数量]");
+                        case "balance":
+                            return Arrays.asList("[货币代码]");
+                        case "pay":
+                            return Arrays.asList("[收款人] [准备金的货币代码] [待支付的货币代码] [货币数量]");
+                    }
+                case "bluk":
+                    switch (args[1]) {
+                        case "check":
+                            return Arrays.asList("[货币代码] [面值] [数量]");
+                    }
+                case "exchange":
+                    switch (args[1]) {
+                        case "get":
+                            return Arrays.asList("[卖出货币代码] [买入货币代码]");
+                        case "set":
+                            return Arrays.asList("[卖出货币代码] [买入货币代码] [货币汇率]");
+                        case "fx":
+                            return Arrays.asList("[卖出货币代码] [买入货币代码] [买入货币数量]");
+                    }
+            }
+        }
+        return Collections.emptyList();
     }
 
     private void excuteTest(CommandSender commandSender, Command command, String s, String[] strings) {
