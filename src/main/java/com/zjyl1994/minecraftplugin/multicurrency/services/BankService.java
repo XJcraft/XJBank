@@ -21,7 +21,7 @@ import java.util.logging.Level;
  */
 public class BankService {
 
-    private static final String SELECT_INFO = "SELECT mc_account.code,mc_currency.name,mc_account.balance FROM mc_account LEFT JOIN mc_currency ON mc_account.code = mc_currency.code WHERE mc_account.username =  ?";
+    private static final String SELECT_INFO = "SELECT mc_account.code,mc_currency.name,mc_account.balance FROM mc_account LEFT JOIN mc_currency ON mc_account.code = mc_currency.code WHERE mc_account.username =  ? AND mc_account.balance > 0";
     private static final String SELECT_BALANCE = "SELECT `balance` FROM `mc_account` WHERE `username` = ? AND `code` = ?";
     private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";

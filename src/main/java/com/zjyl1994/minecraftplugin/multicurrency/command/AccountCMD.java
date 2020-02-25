@@ -61,11 +61,11 @@ public class AccountCMD {
                 @Override
                 public void run() {
                     if (transferResult.getSuccess()) {
-                        p.sendMessage("成功向" + payTo + "转账" + currencyCode.toUpperCase() + roundAmount.toString());
+                        p.sendMessage("成功向" + payTo + "转账" + currencyCode.toUpperCase() + roundAmount.stripTrailingZeros().toPlainString());
                         if (!payToAccountIsVirtual) {
                             Player payToPlayer = Bukkit.getServer().getPlayerExact(payTo);
                             if (payToPlayer != null) {
-                                payToPlayer.sendMessage("收到来自" + p.getName() + "的转账" + currencyCode.toUpperCase() + roundAmount.toString());
+                                payToPlayer.sendMessage("收到来自" + p.getName() + "的转账" + currencyCode.toUpperCase() + roundAmount.stripTrailingZeros().toPlainString());
                             }
                         }
                     } else {
@@ -95,7 +95,7 @@ public class AccountCMD {
                 @Override
                 public void run() {
                     if (transferResult.getSuccess()) {
-                        p.sendMessage("成功从" + upperCurrencyCode + "准备金账户转出" + roundAmount.toString());
+                        p.sendMessage("成功从" + upperCurrencyCode + "准备金账户转出" + roundAmount.stripTrailingZeros().toPlainString());
                     } else {
                         p.sendMessage(transferResult.getReason());
                     }
@@ -121,7 +121,7 @@ public class AccountCMD {
                             resultString.append(" (");
                             resultString.append(x.getCurrencyCode());
                             resultString.append(") ");
-                            resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).toString());
+                            resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
                             resultString.append("\n");
                         });
                         p.sendMessage(resultString.toString());
@@ -187,7 +187,7 @@ public class AccountCMD {
                                         resultString.append("未知行为");
                                 }
                                 resultString.append(x.getCurrencyCode());
-                                resultString.append(x.getAmount().setScale(4, RoundingMode.DOWN).toString());
+                                resultString.append(x.getAmount().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
                                 String remark = x.getRemark();
                                 if (!remark.isBlank()) {
                                     resultString.append(" 备注:");

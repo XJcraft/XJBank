@@ -63,7 +63,7 @@ public class CurrencyCMD {
             OperateResult reserveIncr = CurrencyService.reserveIncr(currencyCode.toUpperCase(), bdAmount, p.getName());
             Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                 if (reserveIncr.getSuccess()) {
-                    p.sendMessage(currencyCode.toUpperCase() + "成功增发储备金" + bdAmount.toString());
+                    p.sendMessage(currencyCode.toUpperCase() + "成功增发储备金" + bdAmount.stripTrailingZeros().toPlainString());
                 } else {
                     p.sendMessage(reserveIncr.getReason());
                 }
@@ -77,7 +77,7 @@ public class CurrencyCMD {
             OperateResult reserveDecr = CurrencyService.reserveDecr(currencyCode.toUpperCase(), bdAmount, p.getName());
             Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                 if (reserveDecr.getSuccess()) {
-                    p.sendMessage(currencyCode.toUpperCase() + "成功回收储备金" + bdAmount.toString());
+                    p.sendMessage(currencyCode.toUpperCase() + "成功回收储备金" + bdAmount.stripTrailingZeros().toPlainString());
                 } else {
                     p.sendMessage(reserveDecr.getReason());
                 }
@@ -112,11 +112,11 @@ public class CurrencyCMD {
                     sb.append("\n货币发行人：");
                     sb.append(cie.getOwner());
                     sb.append("\n货币总发行量：");
-                    sb.append(cie.getTotal().setScale(4, RoundingMode.DOWN).toString());
+                    sb.append(cie.getTotal().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
                     sb.append("\n储备金总量：");
-                    sb.append(cie.getReserve().setScale(4, RoundingMode.DOWN).toString());
+                    sb.append(cie.getReserve().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
                     sb.append("\n玩家存款总量：");
-                    sb.append(cie.getBalanceSum().setScale(4, RoundingMode.DOWN).toString());
+                    sb.append(cie.getBalanceSum().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
                     p.sendMessage(sb.toString());
                 } else {
                     p.sendMessage(currencyInfo.getReason());

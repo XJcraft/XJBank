@@ -44,7 +44,7 @@ public class ExchangeCMD {
                         if (exchangeRate.compareTo(BigDecimal.ZERO) == 0) {
                             p.sendMessage("货币发行人未指定二者汇率");
                         } else {
-                            p.sendMessage("1" + currencyCodeFrom.toUpperCase() + " 可兑换 " + exchangeRate.setScale(4, RoundingMode.DOWN) + currencyCodeTo.toUpperCase());
+                            p.sendMessage("1" + currencyCodeFrom.toUpperCase() + " 可兑换 " + exchangeRate.setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString() + currencyCodeTo.toUpperCase());
                         }
                     } else {
                         p.sendMessage(getResult.getReason());

@@ -101,7 +101,7 @@ public class CheckUtil {
         viewableBuilder.append("\n币种:");
         viewableBuilder.append(ce.getCurrencyCode());
         viewableBuilder.append("\n金额:");
-        viewableBuilder.append(roundAmount.toString());
+        viewableBuilder.append(roundAmount.stripTrailingZeros().toPlainString());
         viewableBuilder.append("\n签发:");
         viewableBuilder.append(issuer);
         viewableBuilder.append("\n日期:");
@@ -118,7 +118,7 @@ public class CheckUtil {
         mrpBuilder.append("\n>>");
         mrpBuilder.append(ce.getCurrencyCode());
         mrpBuilder.append("\n>>");
-        mrpBuilder.append(roundAmount.toString());
+        mrpBuilder.append(roundAmount.toPlainString());
         mrpBuilder.append("\n>>");
         mrpBuilder.append(issuer);
         mrpBuilder.append("\n>>");
