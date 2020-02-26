@@ -31,7 +31,7 @@ public class CurrencyService {
     private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String UPDATE_CURRENCY_TOTAL = "UPDATE mc_currency SET `total` = `total` + ? WHERE `code` = ?";
     private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
-    private static final String SELECT_CURRENCY_INFO = "SELECT `code` `owner`,`name`,total as currencyTotal,(\n" +
+    private static final String SELECT_CURRENCY_INFO = "SELECT `code`,`owner`,`name`,total as currencyTotal,(\n" +
             "SELECT balance FROM mc_account WHERE mc_account.username=CONCAT('$',?)) AS reserveBalance,(\n" +
             "SELECT SUM(balance) FROM mc_account WHERE mc_account.username !=CONCAT('$',?) AND mc_account.`CODE`=?) AS accountBalanceSum FROM `mc_currency` WHERE `code`=?;";
 
