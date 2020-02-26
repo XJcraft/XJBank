@@ -24,6 +24,7 @@ import java.util.logging.Level;
  */
 public class CurrencyService {
 
+    private static final String SELECT_BALANCE = "SELECT `balance` FROM `mc_account` WHERE `username` = ? AND `code` = ?";
     private static final String SELECT_CURRENCY = "SELECT * FROM mc_currency WHERE `code` = ?";
     private static final String INSERT_CURRNECY = "INSERT INTO mc_currency (`code`,`owner`,`name`) VALUES(?,?,?)";
     private static final String UPDATE_CURRENCY_NAME = "UPDATE mc_currency SET `name` = ? WHERE `code` = ?";
@@ -159,7 +160,25 @@ public class CurrencyService {
         BigDecimal roundAmount = amount.setScale(4, RoundingMode.DOWN).negate();
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
+                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
+                // 检查储备账户现金数是否充足
+                BigDecimal reserveBalance; // 付款人余额
+                try {
+                    selectBalance.setString(1, reserveAccount);
+                    selectBalance.setString(2, currencyCode);
+                    ResultSet result = selectBalance.executeQuery();
+                    if (result.next()) {
+                        reserveBalance = result.getBigDecimal("balance");
+                    } else { // 没有记录
+                        reserveBalance = new BigDecimal(0);
+                    }
+                } catch (SQLException e) {
+                    connection.rollback();
+                    throw e;
+                }
+                if (amount.compareTo(reserveBalance) > 0) { // 待扣除金额大于储备账户余额
+                    return new OperateResult(false, "准备金减少失败,储备金账号余额不足，当前余额" + reserveBalance.setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
+                }
                 try {
                     // 更新储备账户内的钱
                     updateBalance.setString(1, reserveAccount);
