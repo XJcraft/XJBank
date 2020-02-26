@@ -150,7 +150,12 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     private void excuteTest(CommandSender commandSender, Command command, String s, String[] strings) {
         //commandSender.sendMessage(((Player) commandSender).getInventory().getItemInMainHand().getType().name());
         Player p = (Player) commandSender;
-        AccountCMD.getInstance().getAccountTradeLog(p, 1);
+        StringBuilder sb = new StringBuilder();
+        sb.append("你是");
+        sb.append(p.getName());
+        sb.append(",手拿");
+        sb.append(p.getInventory().getItemInMainHand().getType().name());
+        p.sendMessage(sb.toString());
     }
 
     // 新增货币 /bank currnecy new [货币代码] [货币名称]
@@ -160,6 +165,7 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     // 准备金提取 /bank currency get [货币代码] [货币数量]
     // 查看准备金账户余额 /bank currency balance [货币代码]
     // 准备金付款 /bank currency pay [收款人] [准备金的货币代码] [待支付的货币代码] [货币数量]
+    // 货币所有权转移 /bank currency reowner [货币代码] [新所有人游戏ID]
     private void excuteCurrency(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
         if (strings.length == 4) {
@@ -177,6 +183,9 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
             }
             if (strings[1].equalsIgnoreCase("get")) {
                 accountInstance.reserveTransferOut(p, strings[2], strings[3]);
+            }
+            if (strings[1].equalsIgnoreCase("reowner")) {
+                currencyInstance.reownerCommand(p, strings[2], strings[3]);
             }
             return;
         }

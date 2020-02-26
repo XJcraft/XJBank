@@ -18,6 +18,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 /**
  * @author zjyl1994
@@ -31,14 +33,15 @@ public class CurrencyService {
     private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
     private static final String UPDATE_CURRENCY_TOTAL = "UPDATE mc_currency SET `total` = `total` + ? WHERE `code` = ?";
     private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
-    private static final String SELECT_CURRENCY_INFO = "SELECT `code`,`owner`,`name`,total as currencyTotal,(\n" +
-            "SELECT balance FROM mc_account WHERE mc_account.username=CONCAT('$',?)) AS reserveBalance,(\n" +
-            "SELECT SUM(balance) FROM mc_account WHERE mc_account.username !=CONCAT('$',?) AND mc_account.`CODE`=?) AS accountBalanceSum FROM `mc_currency` WHERE `code`=?;";
+    private static final String SELECT_CURRENCY_INFO = "SELECT `code`,`owner`,`name`,total as currencyTotal,(\n"
+            + "SELECT balance FROM mc_account WHERE mc_account.username=CONCAT('$',?)) AS reserveBalance,(\n"
+            + "SELECT SUM(balance) FROM mc_account WHERE mc_account.username !=CONCAT('$',?) AND mc_account.`CODE`=?) AS accountBalanceSum FROM `mc_currency` WHERE `code`=?;";
+    private static final String UPDATE_CURRENCY_OWNER = "UPDATE mc_currency SET `owner` = ? WHERE `code`= ?";
 
     // 检查是否货币持有人
     public static Boolean isCurrencyOwner(String currencyCode, String playerName) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY)) {
             String owner;
             try {
                 selectCurrency.setString(1, currencyCode);
@@ -67,7 +70,7 @@ public class CurrencyService {
         }
         currencyCode = currencyCode.toUpperCase();
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement newCurrencyStmt = connection.prepareStatement(INSERT_CURRNECY)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement newCurrencyStmt = connection.prepareStatement(INSERT_CURRNECY)) {
             try {
                 newCurrencyStmt.setString(1, currencyCode);
                 newCurrencyStmt.setString(2, playerName);
@@ -93,7 +96,7 @@ public class CurrencyService {
     public static OperateResult renameCurrency(String currencyCode, String currencyName, String playerName) {
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement renameCurrencyStmt = connection.prepareStatement(UPDATE_CURRENCY_NAME)) {
+                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement renameCurrencyStmt = connection.prepareStatement(UPDATE_CURRENCY_NAME)) {
                 try {
                     renameCurrencyStmt.setString(1, currencyName);
                     renameCurrencyStmt.setString(2, currencyCode);
@@ -119,7 +122,7 @@ public class CurrencyService {
         BigDecimal roundAmount = amount.setScale(4, RoundingMode.DOWN);
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
+                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
                 try {
                     // 更新储备账户内的钱
                     updateBalance.setString(1, reserveAccount);
@@ -160,7 +163,7 @@ public class CurrencyService {
         BigDecimal roundAmount = amount.setScale(4, RoundingMode.DOWN).negate();
         if (isCurrencyOwner(currencyCode, playerName)) {
             try (
-                    Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
+                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement updateCurrencyTotal = connection.prepareStatement(UPDATE_CURRENCY_TOTAL);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
                 // 检查储备账户现金数是否充足
                 BigDecimal reserveBalance; // 付款人余额
                 try {
@@ -216,7 +219,7 @@ public class CurrencyService {
     // 获取货币详细信息
     public static OperateResult getCurrencyInfo(String currencyCode) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY_INFO)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY_INFO)) {
             CurrencyInfoEntity cie = new CurrencyInfoEntity();
             try {
                 selectCurrency.setString(1, currencyCode);
@@ -242,6 +245,34 @@ public class CurrencyService {
         } catch (SQLException e) {
             MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[getCurrencyInfo SQLException]{0}", e.getMessage());
             return new OperateResult(false, "获取货币信息失败-数据库异常");
+        }
+    }
+
+    // 转移货币所有权
+    public static OperateResult reownerCurrency(String currencyCode, String playerName, String newOwnerName) {
+        if (isCurrencyOwner(currencyCode, playerName)) {
+            Player payToPlayer = Bukkit.getServer().getPlayerExact(newOwnerName);
+            if (payToPlayer == null) {
+                return new OperateResult(false, "接受所有权玩家" + newOwnerName + "不在线");
+            }
+            try (
+                     Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement reownerCurrencyStmt = connection.prepareStatement(UPDATE_CURRENCY_OWNER)) {
+                try {
+                    reownerCurrencyStmt.setString(1, newOwnerName);
+                    reownerCurrencyStmt.setString(2, currencyCode);
+                    reownerCurrencyStmt.executeUpdate();
+                    connection.commit();
+                } catch (SQLException e) {
+                    connection.rollback();
+                    throw e;
+                }
+                return new OperateResult(true, "OK");
+            } catch (SQLException e) {
+                MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[reownerCurrency SQLException]{0}", e.getMessage());
+                return new OperateResult(false, "转移货币所有权失败-数据库异常");
+            }
+        } else {
+            return new OperateResult(false, "您并非此货币的发行者");
         }
     }
 }

@@ -98,6 +98,19 @@ public class CurrencyCMD {
         });
     }
 
+    public void reownerCommand(Player p, String currencyCode, String newOwnerName) {
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            OperateResult reownerCurrency = CurrencyService.reownerCurrency(currencyCode.toUpperCase(), p.getName(), newOwnerName);
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
+                if (reownerCurrency.getSuccess()) {
+                    p.sendMessage(currencyCode.toUpperCase() + "所有权转移成功");
+                } else {
+                    p.sendMessage(reownerCurrency.getReason());
+                }
+            });
+        });
+    }
+
     public void currencyInfoCommand(Player p, String currencyCode) {
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             OperateResult currencyInfo = CurrencyService.getCurrencyInfo(currencyCode.toUpperCase());
