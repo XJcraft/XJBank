@@ -90,7 +90,7 @@ public class CheckUtil {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         String dateTimeStr = dtf.format(now);
-        String moneyString = ce.getCurrencyCode() + " " + roundAmount.toString();
+        String moneyString = ce.getCurrencyCode() + " " + roundAmount.stripTrailingZeros().toPlainString();
         String checkId = randomID();
         String checkHash = generateCheckHash(checkId, ce.getCurrencyCode(), roundAmount, issuer, dateTimeStr);
         // 生成可视书页内容

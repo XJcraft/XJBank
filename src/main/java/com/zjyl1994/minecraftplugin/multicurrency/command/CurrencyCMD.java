@@ -141,15 +141,16 @@ public class CurrencyCMD {
                         var data = (ArrayList<AccountBalanceEntity>) (accountInfo.getData());
                         StringBuilder resultString = new StringBuilder();
 
-                        resultString.append(ChatColor.GOLD).append(upperCurrencyCode).append("的储备金账户余额为\n").append(ChatColor.RESET);
+                        resultString.append(ChatColor.GOLD).append("===").append(upperCurrencyCode).append("的储备金账户余额为===\n").append(ChatColor.RESET);
                         data.forEach(x -> {
                             resultString.append(x.getCurrencyName());
                             resultString.append(" (");
                             resultString.append(x.getCurrencyCode());
                             resultString.append(") ");
-                            resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).toString());
+                            resultString.append(x.getBalance().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
                             resultString.append("\n");
                         });
+                        resultString.append(ChatColor.GOLD).append("=========").append(ChatColor.RESET);
                         p.sendMessage(resultString.toString());
                     } else {
                         p.sendMessage(accountInfo.getReason());
