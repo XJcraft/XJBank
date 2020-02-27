@@ -133,6 +133,29 @@ public class AccountCMD {
             });
         });
     }
+    
+    // 查询用户特定币种余额
+    public void getAccountCurrencyBalance(Player p,String currencyCode) {
+        Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
+            OperateResult accountBalance = BankService.queryCurrencyBalance(p.getName(),currencyCode.toUpperCase());
+            Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), new Runnable() {
+                @Override
+                public void run() {
+                    if (accountBalance.getSuccess()) {
+                        var data = (BigDecimal) (accountBalance.getData());
+                        StringBuilder resultString = new StringBuilder();
+                        resultString.append(ChatColor.GOLD).append("您的 ").append(ChatColor.RESET);
+                        resultString.append(currencyCode.toUpperCase());
+                        resultString.append(ChatColor.GOLD).append(" 余额为 ").append(ChatColor.RESET);
+                        resultString.append(data.setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
+                        p.sendMessage(resultString.toString());
+                    } else {
+                        p.sendMessage(accountBalance.getReason());
+                    }
+                }
+            });
+        });
+    }
 
     // 查询账户交易日志
     public void getAccountTradeLog(Player p, Integer pageNo) {
