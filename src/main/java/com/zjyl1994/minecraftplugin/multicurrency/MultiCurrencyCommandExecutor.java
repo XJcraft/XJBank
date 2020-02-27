@@ -227,7 +227,7 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     // 兑付手中的支票 /bank cash
     private void excuteCash(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
-        checkInstance.cashCheck(p,"");
+        checkInstance.cashCheck(p, "");
     }
 
     // 批量操作
@@ -261,18 +261,37 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
         }
     }
 
-    // 查询交易日志 /bank log (页码)
+    // 查询交易日志 /bank log (可选:币种) (页码)
     private void excuteLog(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
-        if (strings.length == 2) {
-            Integer pageNo = MiscUtil.getIntegerFromString(strings[1]);
-            if (pageNo > 0) {
-                accountInstance.getAccountTradeLog(p, pageNo);
-            } else {
-                p.sendMessage("没有第0页");
-            }
+        Integer pageNo;
+        String currencyCode;
+        switch (strings.length) {
+            case 2:
+                if (strings[1].matches("^[A-Za-z]{3}$")) {
+                    currencyCode = strings[1].toUpperCase();
+                    pageNo = 1;
+                } else {
+                    currencyCode = "";
+                    pageNo = MiscUtil.getIntegerFromString(strings[1]);
+                }
+                break;
+            case 3:
+                if (strings[1].matches("^[A-Za-z]{3}$")) {
+                    currencyCode = strings[1].toUpperCase();
+                } else {
+                    currencyCode = "";
+                }
+                pageNo = MiscUtil.getIntegerFromString(strings[2]);
+                break;
+            default:
+                currencyCode = "";
+                pageNo = 1;
+        }
+        if (pageNo > 0) {
+            accountInstance.getAccountTradeLog(p, pageNo, currencyCode);
         } else {
-            accountInstance.getAccountTradeLog(p, 1);
+            p.sendMessage("没有第0页");
         }
     }
 

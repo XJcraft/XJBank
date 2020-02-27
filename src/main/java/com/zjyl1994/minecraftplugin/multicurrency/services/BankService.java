@@ -27,11 +27,13 @@ public class BankService {
     private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
     private static final String SELECT_TX_LOG = "SELECT * FROM mc_tx_log WHERE username = ? ORDER BY tx_time DESC LIMIT ?,5";
     private static final String SELECT_TX_LOG_TOTAL_COUNT = "SELECT COUNT(1) FROM mc_tx_log WHERE username = ?";
+    private static final String SELECT_TX_LOG_SPECIFIC_CURRENCY = "SELECT * FROM mc_tx_log WHERE username = ? AND currency_code = ? ORDER BY tx_time DESC LIMIT ?,5";
+    private static final String SELECT_TX_LOG_SPECIFIC_CURRENCY_TOTAL_COUNT = "SELECT COUNT(1) FROM mc_tx_log WHERE username = ? AND currency_code = ?";
 
     // 查询用户特定币种的余额
     public static OperateResult queryCurrencyBalance(String username, String currencyCode) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE)) {
             BigDecimal balance;
             try {
                 selectBalance.setString(1, username);
@@ -58,7 +60,7 @@ public class BankService {
     // payer 付款人 payee 收款人 currencyCode 货币代码 amount 金额
     public static OperateResult transferTo(String payer, String payee, String currencyCode, BigDecimal amount, TxTypeEnum txType, String remark) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE); PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE); PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);  PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE);  PreparedStatement insertLog = connection.prepareStatement(INSERT_TX_LOG)) {
             if (!AccountHelper.isUnlimitedAccount(payer)) {
                 // 非无限账户需要检查付款人有没有足够的钱
                 BigDecimal payerBalance; // 付款人余额
@@ -140,7 +142,7 @@ public class BankService {
     // 查询余额
     public static OperateResult getAccountInfo(String username) {
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectInfo = connection.prepareStatement(SELECT_INFO)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectInfo = connection.prepareStatement(SELECT_INFO)) {
             ArrayList<AccountBalanceEntity> detail = new ArrayList<>();
             try {
                 selectInfo.setString(1, username);
@@ -164,14 +166,25 @@ public class BankService {
     }
 
     // 查询交易日志
-    public static OperateResult getAccountTradeLog(String username, Integer pageNo) {
+    public static OperateResult getAccountTradeLog(String username, Integer pageNo, String forceCurrencyCode) {
+        String sql;
+        if (forceCurrencyCode.isBlank()) {
+            sql = SELECT_TX_LOG;
+        } else {
+            sql = SELECT_TX_LOG_SPECIFIC_CURRENCY;
+        }
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectTxLog = connection.prepareStatement(sql)) {
             ArrayList<TxLogEntity> detail = new ArrayList<>();
             Integer pageOffset = (pageNo - 1) * 5;
             try {
                 selectTxLog.setString(1, username);
-                selectTxLog.setInt(2, pageOffset);
+                if (!forceCurrencyCode.isBlank()) {
+                    selectTxLog.setString(2, forceCurrencyCode.toUpperCase());
+                    selectTxLog.setInt(3, pageOffset);
+                }else{
+                    selectTxLog.setInt(2, pageOffset);
+                }
                 ResultSet result = selectTxLog.executeQuery();
                 while (result.next()) {
                     String txUsername = result.getString("tx_username");
@@ -195,12 +208,21 @@ public class BankService {
     }
 
     // 查询交易日志对应的页数
-    public static OperateResult getAccountTradeLogTotalPage(String username) {
+    public static OperateResult getAccountTradeLogTotalPage(String username, String forceCurrencyCode) {
+        String sql;
+        if (forceCurrencyCode.isBlank()) {
+            sql = SELECT_TX_LOG_TOTAL_COUNT;
+        } else {
+            sql = SELECT_TX_LOG_SPECIFIC_CURRENCY_TOTAL_COUNT;
+        }
         try (
-                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectTxLog = connection.prepareStatement(SELECT_TX_LOG_TOTAL_COUNT)) {
+                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectTxLog = connection.prepareStatement(sql)) {
             Integer totalCount;
             try {
                 selectTxLog.setString(1, username);
+                if (!forceCurrencyCode.isBlank()) {
+                    selectTxLog.setString(2, forceCurrencyCode.toUpperCase());
+                }
                 ResultSet result = selectTxLog.executeQuery();
                 if (result.next()) {
                     totalCount = result.getInt(1);

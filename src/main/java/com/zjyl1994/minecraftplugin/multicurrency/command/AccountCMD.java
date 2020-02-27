@@ -158,22 +158,27 @@ public class AccountCMD {
     }
 
     // 查询账户交易日志
-    public void getAccountTradeLog(Player p, Integer pageNo) {
+    public void getAccountTradeLog(Player p, Integer pageNo,String forceCurrencyCode) {
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
-            OperateResult accountLogPageNo = BankService.getAccountTradeLogTotalPage(p.getName());
+            OperateResult accountLogPageNo = BankService.getAccountTradeLogTotalPage(p.getName(),forceCurrencyCode.toUpperCase());
             if (accountLogPageNo.getSuccess()) {
                 int totalPage = (int) accountLogPageNo.getData();
                 if (pageNo > totalPage || pageNo <= 0) {
                     Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> p.sendMessage("页码范围 0~" + totalPage + " 页"));
                 } else {
-                    OperateResult accountLog = BankService.getAccountTradeLog(p.getName(), pageNo);
+                    OperateResult accountLog = BankService.getAccountTradeLog(p.getName(), pageNo,forceCurrencyCode.toUpperCase());
                     Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                         if (accountLog.getSuccess()) {
                             var data = (ArrayList<TxLogEntity>) (accountLog.getData());
                             long nowTime = System.currentTimeMillis();
                             DecimalFormat decimalFormat = new DecimalFormat("0.00");
                             StringBuilder resultString = new StringBuilder();
-                            resultString.append(ChatColor.GOLD).append(ChatColor.BOLD).append("===== 对账单 ").append(pageNo).append("/").append(totalPage).append("=====\n").append(ChatColor.RESET);
+                            resultString.append(ChatColor.GOLD).append(ChatColor.BOLD).append("=====");
+                            if(!forceCurrencyCode.isBlank()){
+                                resultString.append(" ").append(forceCurrencyCode.toUpperCase());
+                            }
+                            resultString.append(" 对账单 ");
+                            resultString.append(pageNo).append("/").append(totalPage).append("=====\n").append(ChatColor.RESET);
                             data.forEach(x -> {
                                 long txTime = x.getTxTime().getTime();
                                 String hourAgo = decimalFormat.format((nowTime - txTime) / 1000 / 3600);
@@ -210,8 +215,11 @@ public class AccountCMD {
                                     default:
                                         resultString.append("未知行为");
                                 }
+                                resultString.append(" ");
                                 resultString.append(x.getCurrencyCode());
+                                resultString.append(" ");
                                 resultString.append(x.getAmount().setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
+                                resultString.append(" ");
                                 String remark = x.getRemark();
                                 if (!remark.isBlank()) {
                                     resultString.append(" 备注:");
@@ -220,7 +228,11 @@ public class AccountCMD {
                                 resultString.append("\n");
                             });
                             resultString.append(ChatColor.GRAY);
-                            resultString.append("== 使用 /bank log [页码] 查看其它页==");
+                            if(forceCurrencyCode.isBlank()){
+                                resultString.append("== 使用 /bank log [页码] 查看其它页==");
+                            }else{
+                                resultString.append("== 使用 /bank log ").append(forceCurrencyCode.toUpperCase()).append(" [页码] 查看其它页==");
+                            }
                             p.sendMessage(resultString.toString());
                         } else {
                             p.sendMessage(accountLog.getReason());

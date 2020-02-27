@@ -139,7 +139,7 @@ public class ATMService implements ConversationAbandonedListener {
                 }
                 break;
             case "log":
-                AccountCMD.getInstance().getAccountTradeLog(player, 1);
+                AccountCMD.getInstance().getAccountTradeLog(player, 1,argument.getOrDefault("code", ""));
                 break;
         }
     }
