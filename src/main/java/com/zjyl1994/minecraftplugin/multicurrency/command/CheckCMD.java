@@ -66,14 +66,17 @@ public class CheckCMD {
     }
 
     // 兑付玩家手上的支票
-    public void cashCheck(Player p) {
+    public void cashCheck(Player p,String forceCurrencyCode) {
         ItemStack itemInMainHand = p.getInventory().getItemInMainHand();
         Optional<CurrencyEntity> checkValue = CheckUtil.getValue(itemInMainHand);
         if (checkValue.isEmpty()) {
             p.sendMessage("请手持有效支票再试");
         } else {
             CurrencyEntity ce = checkValue.get();
-
+            if(!forceCurrencyCode.isBlank() && !ce.getCurrencyCode().equalsIgnoreCase(forceCurrencyCode)){
+                p.sendMessage("您手持的不是"+forceCurrencyCode.toUpperCase()+"支票");
+                return;
+            }
             Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
                 String currencyCode = ce.getCurrencyCode().toUpperCase();
                 BigDecimal amount = ce.getAmount().setScale(4, RoundingMode.DOWN);

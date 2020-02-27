@@ -227,7 +227,7 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     // 兑付手中的支票 /bank cash
     private void excuteCash(CommandSender commandSender, Command command, String s, String[] strings) {
         Player p = (Player) commandSender;
-        checkInstance.cashCheck(p);
+        checkInstance.cashCheck(p,"");
     }
 
     // 批量操作

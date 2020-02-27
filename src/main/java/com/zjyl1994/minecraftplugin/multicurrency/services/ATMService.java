@@ -129,7 +129,7 @@ public class ATMService implements ConversationAbandonedListener {
                 CheckCMD.getInstance().makeCheck(player, argument.get("code"), argument.get("amount"));
                 break;
             case "cash":
-                CheckCMD.getInstance().cashCheck(player);
+                CheckCMD.getInstance().cashCheck(player,argument.getOrDefault("code", ""));
                 break;
             case "balance":
                 AccountCMD.getInstance().getAccountInfo(player);
