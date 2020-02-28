@@ -164,7 +164,11 @@ public class AccountCMD {
             if (accountLogPageNo.getSuccess()) {
                 int totalPage = (int) accountLogPageNo.getData();
                 if (pageNo > totalPage || pageNo <= 0) {
-                    Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> p.sendMessage("页码范围 0~" + totalPage + " 页"));
+                    if(totalPage == 0){
+                        Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> p.sendMessage("没有找到 " + forceCurrencyCode.toUpperCase() + " 的交易记录"));
+                    }else{
+                        Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> p.sendMessage("页码范围 1~" + totalPage + " 页"));
+                    }
                 } else {
                     OperateResult accountLog = BankService.getAccountTradeLog(p.getName(), pageNo,forceCurrencyCode.toUpperCase());
                     Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
