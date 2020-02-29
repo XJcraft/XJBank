@@ -9,6 +9,7 @@ import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OutOfRangeCanceller;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.SignUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
@@ -16,6 +17,7 @@ import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import org.bukkit.block.Block;
 
 /**
  * ATM 机
@@ -29,7 +31,7 @@ public class ATMService implements ConversationAbandonedListener {
     private Player player; // 操作玩家
     private String feature; // ATM 选择的功能
     private String featureState; // 功能的步骤
-    private HashMap<String,String> argument; // 参数
+    private HashMap<String, String> argument; // 参数
     private Boolean operateDone; // 完成
 
     private final Location signLocation; // 牌子位置
@@ -60,8 +62,8 @@ public class ATMService implements ConversationAbandonedListener {
         Sign sign = (Sign) this.signLocation.getBlock().getState();
         String signFeature = ChatColor.stripColor(sign.getLine(1).trim());
         String signCurrencyCode = ChatColor.stripColor(sign.getLine(2).trim());
-        if(signCurrencyCode.matches("^[A-Za-z]{3}$")){
-            argument.put("code",signCurrencyCode.toUpperCase());
+        if (signCurrencyCode.matches("^[A-Za-z]{3}$")) {
+            argument.put("code", signCurrencyCode.toUpperCase());
         }
         switch (signFeature) {
             case "直接转账":
@@ -126,20 +128,25 @@ public class ATMService implements ConversationAbandonedListener {
                 AccountCMD.getInstance().transferToAccount(player, argument.get("payto"), argument.get("code"), argument.get("amount"));
                 break;
             case "check":
-                CheckCMD.getInstance().makeCheck(player, argument.get("code"), argument.get("amount"));
+                Block atmDepend = SignUtil.getSignDep(this.signLocation.getBlock());
+                if (atmDepend == null) {
+                    CheckCMD.getInstance().makeCheck(player, argument.get("code"), argument.get("amount"));
+                } else {
+                    CheckCMD.getInstance().makeCheckOnATM(player, atmDepend, argument.get("code"), argument.get("amount"));
+                }
                 break;
             case "cash":
-                CheckCMD.getInstance().cashCheck(player,argument.getOrDefault("code", ""));
+                CheckCMD.getInstance().cashCheck(player, argument.getOrDefault("code", ""));
                 break;
             case "balance":
-                if(argument.containsKey("code")){
-                    AccountCMD.getInstance().getAccountCurrencyBalance(player,argument.get("code"));
-                }else{
+                if (argument.containsKey("code")) {
+                    AccountCMD.getInstance().getAccountCurrencyBalance(player, argument.get("code"));
+                } else {
                     AccountCMD.getInstance().getAccountInfo(player);
                 }
                 break;
             case "log":
-                AccountCMD.getInstance().getAccountTradeLog(player, 1,argument.getOrDefault("code", ""));
+                AccountCMD.getInstance().getAccountTradeLog(player, 1, argument.getOrDefault("code", ""));
                 break;
         }
     }
@@ -225,11 +232,11 @@ public class ATMService implements ConversationAbandonedListener {
         public Prompt acceptInput(ConversationContext context, String input) {
             switch (featureState) {
                 case "payUsername":
-                    argument.put("payto",input);
-                    if(argument.containsKey("code")){
+                    argument.put("payto", input);
+                    if (argument.containsKey("code")) {
                         featureState = "payAmount";
                         return new MoneyPrompt();
-                    }else{
+                    } else {
                         featureState = "payCurrencyCode";
                         return new CurrencyCodePrompt();
                     }
@@ -251,11 +258,11 @@ public class ATMService implements ConversationAbandonedListener {
         public Prompt acceptInput(ConversationContext context, String input) {
             switch (featureState) {
                 case "payCurrencyCode":
-                    argument.put("code",input);
+                    argument.put("code", input);
                     featureState = "payAmount";
                     return new MoneyPrompt();
                 case "checkCurrencyCode":
-                    argument.put("code",input);
+                    argument.put("code", input);
                     featureState = "checkAmount";
                     return new MoneyPrompt();
                 default:
@@ -287,7 +294,7 @@ public class ATMService implements ConversationAbandonedListener {
             switch (featureState) {
                 case "payAmount":
                 case "checkAmount":
-                    argument.put("amount",Double.toString(input.doubleValue()));
+                    argument.put("amount", Double.toString(input.doubleValue()));
                     featureState = "none";
                     operateDone = true;
                     return Prompt.END_OF_CONVERSATION;

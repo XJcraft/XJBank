@@ -34,4 +34,16 @@ public class MiscUtil {
             return 0;
         }
     }
+    
+    public static String locationToString(Location l){
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        sb.append(l.getBlockX());
+        sb.append(",");
+        sb.append(l.getBlockY());
+        sb.append(",");
+        sb.append(l.getBlockZ());
+        sb.append("]");
+        return sb.toString();
+    }
 }

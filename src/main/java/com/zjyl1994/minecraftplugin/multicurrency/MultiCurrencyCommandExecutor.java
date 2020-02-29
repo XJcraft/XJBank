@@ -9,17 +9,24 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.ExchangeCMD;
+import com.zjyl1994.minecraftplugin.multicurrency.utils.BarrelUtil;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author zjyl1994
@@ -31,7 +38,6 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     private final CheckCMD checkInstance;
     private final AccountCMD accountInstance;
     private final ExchangeCMD exchangeInstance;
-    private final List<String> tabComplateData;
 
     public MultiCurrencyCommandExecutor(MultiCurrencyPlugin plugin) {
         this.plugin = plugin;
@@ -39,7 +45,6 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
         this.checkInstance = CheckCMD.getInstance();
         this.accountInstance = AccountCMD.getInstance();
         this.exchangeInstance = ExchangeCMD.getInstance();
-        this.tabComplateData = this.plugin.getConfig().getStringList("tabdata");
     }
 
     @Override
@@ -150,11 +155,33 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     private void excuteTest(CommandSender commandSender, Command command, String s, String[] strings) {
         //commandSender.sendMessage(((Player) commandSender).getInventory().getItemInMainHand().getType().name());
         Player p = (Player) commandSender;
+        HashSet<Material> transparent = new HashSet<>();
+        transparent.add(Material.AIR);
+        Block seenBlock = p.getTargetBlock(transparent, 30);
+        List<Location> barrels = BarrelUtil.searchBarrel(seenBlock);
+        Optional<Location> paperBarrel = Optional.empty();
+        if (!barrels.isEmpty()) {
+            paperBarrel = BarrelUtil.checkBarrelListItemStack(barrels, new ItemStack(Material.PAPER, 4));
+        }
         StringBuilder sb = new StringBuilder();
-        sb.append("你是");
-        sb.append(p.getName());
-        sb.append(",手拿");
-        sb.append(p.getInventory().getItemInMainHand().getType().name());
+        sb.append("视线Block:");
+        sb.append(MiscUtil.locationToString(seenBlock.getLocation()));
+        if (barrels.isEmpty()) {
+            sb.append("\n检测不到可关联木桶\n");
+        } else {
+            sb.append("\n可关联木桶:\n");
+            for (Location l : barrels) {
+                sb.append(MiscUtil.locationToString(l));
+                sb.append("\n");
+            }
+            sb.append("=>");
+            if (paperBarrel.isPresent()) {
+                sb.append(MiscUtil.locationToString(paperBarrel.get()));
+                sb.append("中有4纸");
+            }else{
+                sb.append("桶里无4纸");
+            }
+        }
         p.sendMessage(sb.toString());
     }
 
