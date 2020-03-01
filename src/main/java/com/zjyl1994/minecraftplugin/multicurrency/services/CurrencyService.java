@@ -10,6 +10,8 @@ import com.zjyl1994.minecraftplugin.multicurrency.utils.AccountHelper;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.CurrencyInfoEntity;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.OperateResult;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.TxTypeEnum;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 /**
  * @author zjyl1994
@@ -34,7 +34,7 @@ public class CurrencyService {
     private static final String UPDATE_CURRENCY_TOTAL = "UPDATE mc_currency SET `total` = `total` + ? WHERE `code` = ?";
     private static final String INSERT_TX_LOG = "INSERT INTO mc_tx_log (username,tx_username,tx_time,tx_type,currency_code,amount,remark) VALUES (?,?,NOW(),?,?,?,?)";
     private static final String SELECT_CURRENCY_INFO = "SELECT `code`,`owner`,`name`,total as currencyTotal,(\n"
-            + "SELECT balance FROM mc_account WHERE mc_account.username=CONCAT('$',?)) AS reserveBalance,(\n"
+            + "SELECT balance FROM mc_account WHERE mc_account.username=CONCAT('$',?)  and mc_account.`code`=?) AS reserveBalance,(\n"
             + "SELECT SUM(balance) FROM mc_account WHERE mc_account.username !=CONCAT('$',?) AND mc_account.`CODE`=?) AS accountBalanceSum FROM `mc_currency` WHERE `code`=?;";
     private static final String UPDATE_CURRENCY_OWNER = "UPDATE mc_currency SET `owner` = ? WHERE `code`= ?";
 
@@ -226,6 +226,7 @@ public class CurrencyService {
                 selectCurrency.setString(2, currencyCode);
                 selectCurrency.setString(3, currencyCode);
                 selectCurrency.setString(4, currencyCode);
+                selectCurrency.setString(5, currencyCode);
                 ResultSet result = selectCurrency.executeQuery();
                 if (result.next()) {
                     cie.setOwner(result.getString("owner"));
