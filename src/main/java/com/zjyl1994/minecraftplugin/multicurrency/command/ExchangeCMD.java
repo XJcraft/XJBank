@@ -56,6 +56,10 @@ public class ExchangeCMD {
 
     public void setCommand(Player p, String currencyCodeFrom, String currencyCodeTo, String rate) {
         BigDecimal exchangeRate = new BigDecimal(rate).setScale(4, RoundingMode.DOWN);
+        if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) { //操作数必须大于0
+            p.sendMessage("数额必须大于0");
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             String message;
             if (isCurrencyOwner(currencyCodeTo, p.getName())) {
@@ -74,6 +78,10 @@ public class ExchangeCMD {
 
     public void exchangeCommand(Player p, String currencyCodeFrom, String currencyCodeTo, String amount) {
         BigDecimal exchangeAmount = new BigDecimal(amount).setScale(4, RoundingMode.DOWN);
+        if (exchangeAmount.compareTo(BigDecimal.ZERO) <= 0) { //操作数必须大于0
+            p.sendMessage("金额必须大于0");
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
             OperateResult runResult = ExchangeService.exchange(p.getName(), currencyCodeFrom.toUpperCase(), currencyCodeTo.toUpperCase(), exchangeAmount);
             Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
