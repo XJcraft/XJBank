@@ -48,7 +48,7 @@ public class AccountCMD {
             return;
         }
         Boolean payToAccountIsVirtual = payTo.startsWith("$");
-        if (!payToAccountIsVirtual) {
+        if (!payToAccountIsVirtual && !p.isOp() && !currencyCode.equalsIgnoreCase("GOV")) {
             Player payToPlayer = Bukkit.getServer().getPlayerExact(payTo);
             if (payToPlayer == null) {
                 p.sendMessage("收款玩家" + payTo + "不在线");

@@ -40,6 +40,10 @@ public class CurrencyService {
 
     // 检查是否货币持有人
     public static Boolean isCurrencyOwner(String currencyCode, String playerName) {
+        Player p = Bukkit.getServer().getPlayer(playerName);
+        if (p != null && p.isOp() && currencyCode.equalsIgnoreCase("GOV")) {
+            return true;
+        }
         try (
                  Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement selectCurrency = connection.prepareStatement(SELECT_CURRENCY)) {
             String owner;
