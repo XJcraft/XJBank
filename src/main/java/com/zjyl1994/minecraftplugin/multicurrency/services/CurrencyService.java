@@ -19,6 +19,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -28,6 +30,7 @@ public class CurrencyService {
 
     private static final String SELECT_BALANCE = "SELECT `balance` FROM `mc_account` WHERE `username` = ? AND `code` = ?";
     private static final String SELECT_CURRENCY = "SELECT * FROM mc_currency WHERE `code` = ?";
+    private static final String SELECT_ALL_CURRENCY = "SELECT `code` FROM mc_currency";
     private static final String INSERT_CURRNECY = "INSERT INTO mc_currency (`code`,`owner`,`name`) VALUES(?,?,?)";
     private static final String UPDATE_CURRENCY_NAME = "UPDATE mc_currency SET `name` = ? WHERE `code` = ?";
     private static final String UPDATE_BALANCE = "INSERT INTO `mc_account` (`username`,`code`,`balance`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `balance` = `balance` + ?";
@@ -67,6 +70,29 @@ public class CurrencyService {
         }
     }
 
+    // 获取所有货币
+    public static List<String> getCurrencies() {
+
+        try (
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement selectCurrency = connection.prepareStatement(SELECT_ALL_CURRENCY)) {
+            List<String> owner = new ArrayList<>();
+            try {
+                ResultSet result = selectCurrency.executeQuery();
+                while (result.next()) {
+                    owner.add(result.getString("code"));
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+            return owner;
+        } catch (SQLException e) {
+            MultiCurrencyPlugin.getInstance().getLogger().log(Level.WARNING, "[isCurrencyOwner SQLException]{0}", e.getMessage());
+            return null;
+        }
+    }
+
     // 新建货币
     public static OperateResult newCurrency(String currencyCode, String currencyName, String playerName) {
         if (!currencyCode.matches("^[A-Za-z]{3}$")) {
@@ -74,7 +100,7 @@ public class CurrencyService {
         }
         currencyCode = currencyCode.toUpperCase();
         try (
-                 Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection();  PreparedStatement newCurrencyStmt = connection.prepareStatement(INSERT_CURRNECY)) {
+                Connection connection = MultiCurrencyPlugin.getInstance().getHikari().getConnection(); PreparedStatement newCurrencyStmt = connection.prepareStatement(INSERT_CURRNECY)) {
             try {
                 newCurrencyStmt.setString(1, currencyCode);
                 newCurrencyStmt.setString(2, playerName);

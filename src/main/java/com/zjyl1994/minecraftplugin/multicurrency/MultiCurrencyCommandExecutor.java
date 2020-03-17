@@ -9,24 +9,22 @@ import com.zjyl1994.minecraftplugin.multicurrency.command.AccountCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CheckCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.CurrencyCMD;
 import com.zjyl1994.minecraftplugin.multicurrency.command.ExchangeCMD;
+import com.zjyl1994.minecraftplugin.multicurrency.services.CurrencyService;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.BarrelUtil;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.MiscUtil;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author zjyl1994
@@ -38,6 +36,7 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     private final CheckCMD checkInstance;
     private final AccountCMD accountInstance;
     private final ExchangeCMD exchangeInstance;
+    private List<String> currencies;
 
     public MultiCurrencyCommandExecutor(MultiCurrencyPlugin plugin) {
         this.plugin = plugin;
@@ -45,6 +44,12 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
         this.checkInstance = CheckCMD.getInstance();
         this.accountInstance = AccountCMD.getInstance();
         this.exchangeInstance = ExchangeCMD.getInstance();
+
+
+    }
+
+    public void updateCurrencies() {
+        currencies = CurrencyService.getCurrencies();
     }
 
     @Override
@@ -96,57 +101,140 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         //Bukkit.getLogger().info(Arrays.deepToString(args));
         if (args.length == 1) {
-            return Arrays.asList("currency", "pay", "check", "cash", "info", "bluk", "log", "exchange").stream().filter(s -> s.startsWith(args[0])).collect(Collectors.toList());
-        }
-        if (args.length == 2) {
+            return Stream.of("currency", "pay", "check", "cash", "info", "bluk", "log", "exchange").filter(s -> s.startsWith(args[0])).collect(Collectors.toList());
+        } else {
+            String lastArg = args[args.length - 1];
             switch (args[0]) {
                 case "currency":
-                    return Arrays.asList("new", "incr", "decr", "rename", "get", "balance", "pay").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
+                    if (args.length == 2) {
+                        return Stream.of("new", "incr", "decr", "rename", "get", "balance", "pay").filter(s -> s.startsWith(lastArg)).collect(Collectors.toList());
+                    } else {
+                        switch (args[1]) {
+                            case "new":
+                                if (args.length == 3) {
+                                    return Collections.singletonList("[货币代码] [货币名称]");
+                                } else if (args.length == 4)
+                                    return Collections.singletonList("[货币名称]");
+                                break;
+                            case "incr":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 4) {
+                                    return Collections.singletonList("[增发货币数量]");
+                                }
+                                break;
+                            case "decr":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 4) {
+                                    return Collections.singletonList("[减少货币数量]");
+                                }
+                                break;
+                            case "rename":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 4) {
+                                    return Collections.singletonList("[新货币名称]");
+                                }
+                                break;
+                            case "get":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 4) {
+                                    return Collections.singletonList("[货币数量]");
+                                }
+                                break;
+                            case "balance":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                }
+                                break;
+                            case "pay":
+                                if (args.length == 3) {
+                                    return null;
+                                } else if (args.length == 4 || args.length == 5) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else {
+                                    return Collections.singletonList("[货币数量]");
+                                }
+                        }
+                    }
+                    break;
                 case "pay":
-                    return Arrays.asList("[对方玩家名] [货币代码] [货币数量]");
+                    if (args.length == 2) {
+                        return null;
+                    } else if (args.length == 3) {
+                        return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                    } else if (args.length == 4) {
+                        return Collections.singletonList("[货币数量]");
+                    }
+                    break;
                 case "check":
-                    return Arrays.asList("[货币代码] [货币数量]");
+                    if (args.length == 2) {
+                        return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                    } else if (args.length == 3) {
+                        return Collections.singletonList("[货币数量]");
+                    }
+                    break;
                 case "bluk":
-                    return Arrays.asList("check", "cash").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
+                    if (args.length == 2) {
+                        return Stream.of("check", "cash").filter(s -> s.startsWith(lastArg)).collect(Collectors.toList());
+                    } else {
+                        switch (args[1]) {
+                            case "check":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 4) {
+                                    return Collections.singletonList("[面值] [数量]");
+                                } else {
+                                    return Collections.singletonList("[数量]");
+                                }
+                            case "cash":
+                                return Collections.emptyList();
+                        }
+                    }
+                    break;
                 case "info":
-                    return Arrays.asList("[货币代码]");
+                    if (args.length == 2)
+                        return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                    break;
                 case "exchange":
-                    return Arrays.asList("get", "set", "fx").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
-            }
-        }
-        if (args.length == 3) {
-            switch (args[0]) {
-                case "currency":
-                    switch (args[1]) {
-                        case "new":
-                            return Arrays.asList("[货币代码] [货币名称]");
-                        case "incr":
-                            return Arrays.asList("[货币代码] [增发货币数量]");
-                        case "decr":
-                            return Arrays.asList("[货币代码] [减少货币数量]");
-                        case "rename":
-                            return Arrays.asList("[货币代码] [新货币名称]");
-                        case "get":
-                            return Arrays.asList("[货币代码] [货币数量]");
-                        case "balance":
-                            return Arrays.asList("[货币代码]");
-                        case "pay":
-                            return Arrays.asList("[收款人] [准备金的货币代码] [待支付的货币代码] [货币数量]");
-                    }
-                case "bluk":
-                    switch (args[1]) {
-                        case "check":
-                            return Arrays.asList("[货币代码] [面值] [数量]");
-                    }
-                case "exchange":
-                    switch (args[1]) {
-                        case "get":
-                            return Arrays.asList("[卖出货币代码] [买入货币代码]");
-                        case "set":
-                            return Arrays.asList("[卖出货币代码] [买入货币代码] [货币汇率]");
-                        case "fx":
-                            return Arrays.asList("[卖出货币代码] [买入货币代码] [买入货币数量]");
-                    }
+                    if (args.length == 2)
+                        return Stream.of("get", "set", "fx").filter(s -> s.startsWith(lastArg)).collect(Collectors.toList());
+                    else
+                        switch (args[1]) {
+                            case "get":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toCollection(() -> Collections.singletonList("")));
+                                } else if (args.length == 4) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                }
+                                break;
+//                                return Arrays.asList("[卖出货币代码] [买入货币代码]");
+                            case "set":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 4) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                } else if (args.length == 5) {
+                                    return Collections.singletonList("[货币汇率]");
+                                }
+                                break;
+//                                return Arrays.asList("[卖出货币代码] [买入货币代码] [货币汇率]");
+                            case "fx":
+                                if (args.length == 3) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toCollection(() -> new ArrayList<>(Arrays.asList("[卖出货币代码]"))));
+                                } else if (args.length == 4) {
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toCollection(() -> new ArrayList<>(Arrays.asList("[买入货币代码]"))));
+                                } else if (args.length == 5) {
+                                    return Collections.singletonList("[买入货币数量]");
+                                }
+                                break;
+//                                return Arrays.asList("[卖出货币代码] [买入货币代码] [买入货币数量]");
+                        }
+                    break;
+                default:
+                    return Collections.emptyList();
             }
         }
         return Collections.emptyList();
@@ -178,7 +266,7 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
             if (paperBarrel.isPresent()) {
                 sb.append(MiscUtil.locationToString(paperBarrel.get()));
                 sb.append("中有4纸");
-            }else{
+            } else {
                 sb.append("桶里无4纸");
             }
         }
