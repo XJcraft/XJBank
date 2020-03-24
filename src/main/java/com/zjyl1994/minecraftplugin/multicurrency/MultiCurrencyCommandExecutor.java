@@ -205,9 +205,9 @@ public class MultiCurrencyCommandExecutor implements TabExecutor {
                         switch (args[1]) {
                             case "get":
                                 if (args.length == 3) {
-                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toCollection(() -> Collections.singletonList("")));
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toCollection(() -> new ArrayList<>(Arrays.asList("[卖出货币代码]"))));
                                 } else if (args.length == 4) {
-                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toList());
+                                    return currencies.stream().filter(s -> s.startsWith(lastArg.toUpperCase())).collect(Collectors.toCollection(() -> new ArrayList<>(Arrays.asList("[买入货币代码]"))));
                                 }
                                 break;
 //                                return Arrays.asList("[卖出货币代码] [买入货币代码]");
