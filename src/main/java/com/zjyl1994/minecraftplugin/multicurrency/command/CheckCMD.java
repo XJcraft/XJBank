@@ -9,20 +9,18 @@ import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import com.zjyl1994.minecraftplugin.multicurrency.services.CheckService;
 import com.zjyl1994.minecraftplugin.multicurrency.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Barrel;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.bukkit.Location;
-import org.bukkit.block.Barrel;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 
 /**
  * 支票操作指令
@@ -125,6 +123,7 @@ public class CheckCMD {
                 p.sendMessage("您手持的不是" + forceCurrencyCode.toUpperCase() + "支票");
                 return;
             }
+            p.getInventory().remove(itemInMainHand);
             Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
                 String currencyCode = ce.getCurrencyCode().toUpperCase();
                 BigDecimal amount = ce.getAmount().setScale(4, RoundingMode.DOWN);
@@ -132,9 +131,9 @@ public class CheckCMD {
                 Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                     if (transferResult.getSuccess()) {
                         // 在玩家手里抢走已经兑付的支票
-                        p.getInventory().remove(itemInMainHand);
                         p.sendMessage("支票" + currencyCode + amount.toString() + "已入账");
                     } else {
+                        p.getInventory().addItem(itemInMainHand);
                         p.sendMessage(transferResult.getReason());
                     }
                 });
@@ -189,21 +188,22 @@ public class CheckCMD {
             ItemStack checkItem = inventory.getItem(i);
             if (checkItem != null) {
                 Optional<CurrencyEntity> checkValue = CheckUtil.getValue(checkItem);
-                if (checkValue.isPresent()) { // 有效支票触发异步转账
+                // 有效支票触发异步转账
+                checkValue.ifPresent(currencyEntity -> {
+                    p.getInventory().remove(checkItem);
                     Bukkit.getScheduler().runTaskAsynchronously(MultiCurrencyPlugin.getInstance(), () -> {
-                        CurrencyEntity ce = checkValue.get();
-                        OperateResult transferResult = CheckService.cashCheck(p.getName(), ce.getCurrencyCode(), ce.getAmount(), ce.getRemark() + "的支票");
+                        OperateResult transferResult = CheckService.cashCheck(p.getName(), currencyEntity.getCurrencyCode(), currencyEntity.getAmount(), currencyEntity.getRemark() + "的支票");
                         Bukkit.getScheduler().runTask(MultiCurrencyPlugin.getInstance(), () -> {
                             if (transferResult.getSuccess()) {
                                 // 在玩家手里抢走已经兑付的支票
-                                p.getInventory().remove(checkItem);
-                                p.sendMessage("支票" + ce.getCurrencyCode() + ce.getAmount().toString() + "已入账");
+                                p.sendMessage("支票" + currencyEntity.getCurrencyCode() + currencyEntity.getAmount().toString() + "已入账");
                             } else {
+                                p.getInventory().addItem(checkItem);
                                 p.sendMessage(transferResult.getReason());
                             }
                         });
                     });
-                }
+                });
             }
         }
     }
